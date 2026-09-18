@@ -1,0 +1,39 @@
+# Scaner3D — Editor 3D sobre STL guía
+
+Editor 3D en el navegador (un solo archivo `index.html`, HTML + [Three.js](https://threejs.org/)) para cargar un modelo STL como **referencia** y diseñar tu propia pieza encima, sin instalar nada.
+
+Pensado originalmente para generar un molar en malla/red de filamento sobre un STL guía, para montarlo sobre los LED RGB de un humidificador y lograr un efecto tipo holograma — pero sirve para cualquier diseño que necesite una referencia 3D de fondo.
+
+## Funciones
+
+- **STL guía**: cárgalo como referencia semi-transparente (no editable).
+- **Importar modelo editable**: STL, OBJ, GLTF/GLB.
+- **Primitivas**: cubo, esfera, cilindro, cono, toro, plano.
+- **Biblioteca de modelos**: plantillas rápidas (pilar, corona, anillo) + tus propios modelos guardados en el navegador.
+- **Selección y transformación**: mover / rotar / escalar con gizmo, duplicar objeto.
+- **Material**: color, rugosidad, metalicidad, sombreado suave/plano.
+- **Edición de malla**: subdividir, extrusión de cara superior, pincel de escultura.
+- **Operaciones booleanas**: unión, resta, intersección (vía [three-bvh-csg](https://github.com/gkjohnson/three-bvh-csg)).
+- **Deshacer / Rehacer**: `Ctrl+Z` / `Ctrl+Y`.
+- **Exportar**: STL, OBJ, GLTF/GLB.
+- **Autoguardado** local (cada 15s y en cada acción) y recuperación tras pérdida de contexto WebGL.
+
+## Cómo usarlo
+
+No requiere instalación. Basta con servir el archivo:
+
+```bash
+python3 -m http.server 8080
+```
+
+Abre `http://localhost:8080` en el navegador (pestaña completa, no vista embebida).
+
+> ⚠️ Si abres el `index.html` directo desde el sistema de archivos (sin servidor), la interfaz funciona pero el autoguardado no tiene dónde escribir — corre siempre desde un servidor local.
+
+## Privacidad
+
+Esta app corre **100% en tu navegador**. No se envía ningún dato — modelos, diseños ni nada más — a ningún servidor externo. El autoguardado y la biblioteca de modelos se guardan solo en el almacenamiento local (`localStorage`) de tu propio navegador.
+
+## Licencia
+
+Todos los derechos reservados © 2026 Yoshio Carballo. Ver [LICENSE](./LICENSE).
