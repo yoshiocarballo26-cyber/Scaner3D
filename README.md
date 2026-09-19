@@ -1,8 +1,8 @@
 # Scaner3D — Editor 3D sobre STL guía
 
-Editor 3D en el navegador (un solo archivo `index.html`, HTML + [Three.js](https://threejs.org/)) para cargar un modelo STL como **referencia** y diseñar tu propia pieza encima, sin instalar nada.
+Editor 3D en el navegador para cargar un modelo STL como **referencia** y diseñar tu propia pieza encima, sin instalar nada.
 
-Pensado originalmente para generar un molar en malla/red de filamento sobre un STL guía, para montarlo sobre los LED RGB de un humidificador y lograr un efecto tipo holograma — pero sirve para cualquier diseño que necesite una referencia 3D de fondo.
+Pensado originalmente para generar en malla/red de filamento sobre un STL guía, para montarlo sobre una base y obtener un efecto tipo holograma — pero sirve para cualquier diseño que necesite una referencia 3D de fondo.
 
 ## Funciones
 
@@ -13,22 +13,14 @@ Pensado originalmente para generar un molar en malla/red de filamento sobre un S
 - **Selección y transformación**: mover / rotar / escalar con gizmo, duplicar objeto.
 - **Material**: color, rugosidad, metalicidad, sombreado suave/plano.
 - **Edición de malla**: subdividir, extrusión de cara superior, pincel de escultura.
-- **Operaciones booleanas**: unión, resta, intersección (vía [three-bvh-csg](https://github.com/gkjohnson/three-bvh-csg)).
+- **Operaciones booleanas**: unión, resta, intersección
 - **Deshacer / Rehacer**: `Ctrl+Z` / `Ctrl+Y`.
 - **Exportar**: STL, OBJ, GLTF/GLB.
 - **Autoguardado** local (cada 15s y en cada acción) y recuperación tras pérdida de contexto WebGL.
 
 ## Cómo usarlo
 
-No requiere instalación. Basta con servir el archivo:
-
-```bash
-python3 -m http.server 8080
-```
-
-Abre `http://localhost:8080` en el navegador (pestaña completa, no vista embebida).
-
-> ⚠️ Si abres el `index.html` directo desde el sistema de archivos (sin servidor), la interfaz funciona pero el autoguardado no tiene dónde escribir — corre siempre desde un servidor local.
+No requiere instalación.
 
 ## Privacidad
 
