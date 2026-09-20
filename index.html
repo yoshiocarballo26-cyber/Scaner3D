@@ -1,0 +1,2191 @@
+<!DOCTYPE html>
+<!--
+  YC Editor 3D — Speed3Dental
+  © 2026 Yoshio Carballo. Todos los derechos reservados.
+  Editor 3D web para diseñar piezas imprimibles (figuras, autos de colección, accesorios).
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>YC Editor 3D — Diseño para impresión 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12151a; --bar:#181c22; --panel:#1c2027; --panel2:#232833; --line:#2d3440; --line2:#3a4250;
+  --text:#e4e8ee; --mut:#8b94a4; --acc:#f5a524; --acc-ink:#1a1204; --info:#4ecdc4; --err:#ff6b81; --ok:#62d98b;
+  --r:7px; --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font:13px/1.4 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none;pointer-events:none}
+#app{display:grid;grid-template-rows:42px 1fr 26px;height:100%}
+
+/* ---- barra superior ---- */
+#topbar{display:flex;align-items:center;gap:4px;padding:0 10px;background:var(--bar);border-bottom:1px solid var(--line);position:relative;z-index:60}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;margin-right:10px;white-space:nowrap}
+.brand i{width:24px;height:24px;border-radius:6px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;font:600 11px var(--mono);font-style:normal}
+.brand span{color:var(--mut);font-weight:400}
+.menu{position:relative}
+.menu-btn{background:none;border:0;padding:7px 10px;border-radius:6px;color:var(--text)}
+.menu-btn:hover,.menu.open>.menu-btn{background:var(--panel2)}
+.menu-list{display:none;position:absolute;top:100%;left:0;min-width:230px;background:var(--panel2);border:1px solid var(--line2);border-radius:9px;padding:5px;box-shadow:0 14px 34px rgba(0,0,0,.55);z-index:70}
+.menu.open>.menu-list{display:block}
+.mi{display:flex;justify-content:space-between;gap:16px;width:100%;text-align:left;background:none;border:0;padding:7px 10px;border-radius:5px}
+.mi:hover{background:rgba(245,165,36,.14)}
+.mi kbd{font:11px var(--mono);color:var(--mut)}
+.msep{height:1px;background:var(--line);margin:5px 4px}
+.sp{flex:1}
+.ib{background:none;border:1px solid transparent;color:var(--mut);border-radius:6px;width:30px;height:30px;display:inline-grid;place-items:center;padding:0}
+.ib:hover{color:var(--text);background:var(--panel2)}
+.ib:disabled{opacity:.3;cursor:default}
+#acct{display:flex;align-items:center;gap:8px;padding:4px 10px;border:1px solid var(--line2);border-radius:20px;font-size:12px;color:var(--mut);white-space:nowrap}
+#acct b{color:var(--acc);font-weight:600}
+#btnPanel{display:none}
+
+/* ---- zona principal ---- */
+#main{display:grid;grid-template-columns:48px 1fr 340px;min-height:0;position:relative}
+#toolbar{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;background:var(--bar);border-right:1px solid var(--line);z-index:5}
+.tool{width:38px;height:38px;border-radius:9px;border:1px solid transparent;background:none;color:var(--mut);display:grid;place-items:center}
+.tool:hover{color:var(--text);background:var(--panel2)}
+.tool.active{background:var(--acc);color:var(--acc-ink)}
+.tsep{width:24px;height:1px;background:var(--line);margin:4px 0}
+#viewport{position:relative;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 20%,#232a35 0%,#151920 60%,#0f1217 100%)}
+#viewport canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.dl{position:absolute;left:0;top:0;display:none;font:500 11px var(--mono);padding:2px 6px;border-radius:5px;background:rgba(12,14,18,.86);border:1px solid var(--line2);white-space:nowrap;color:var(--info)}
+.dl.x{color:#ff8a8a}.dl.y{color:#8dffa8}.dl.z{color:#8fb4ff}
+.ml{pointer-events:auto;color:#ffd166;border-color:#7a6320;display:block}
+.ml small{display:block;color:var(--mut);font-size:10px}
+.ml button{background:none;border:0;color:var(--mut);padding:0 0 0 6px}
+.ml button:hover{color:var(--err)}
+#hint{position:absolute;left:10px;top:10px;max-width:60%;padding:6px 10px;border-radius:8px;background:rgba(12,14,18,.78);border:1px solid var(--line2);color:var(--mut);pointer-events:none}
+#viewbar{position:absolute;right:10px;top:10px;display:flex;gap:3px;padding:3px;background:rgba(12,14,18,.82);border:1px solid var(--line2);border-radius:9px;backdrop-filter:blur(4px)}
+#viewbar button{background:none;border:0;border-radius:6px;padding:5px 8px;color:var(--mut);font-size:12px;display:flex;align-items:center;gap:4px}
+#viewbar button:hover{background:var(--panel2);color:var(--text)}
+#viewbar button.on{color:var(--acc)}
+#camPanel{display:none;position:absolute;right:10px;top:52px;width:264px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.5);z-index:8}
+#camPanel.open{display:block}
+
+/* ---- panel derecho ---- */
+#side{display:flex;flex-direction:column;min-height:0;background:var(--panel);border-left:1px solid var(--line)}
+#tabs{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--line);background:var(--bar)}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:7px 0 6px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc);background:rgba(245,165,36,.06)}
+.tabpane{display:none;overflow-y:auto;padding:10px 10px 30px;flex:1;min-height:0}
+.tabpane.active{display:block}
+.sec{border:1px solid var(--line);border-radius:9px;margin:0 0 9px;background:var(--panel2)}
+.sec>summary{list-style:none;cursor:pointer;padding:9px 11px;font-weight:600;display:flex;align-items:center;gap:7px}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary::before{content:'';width:6px;height:6px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(-45deg);transition:transform .15s;margin-right:2px}
+.sec[open]>summary::before{transform:rotate(45deg)}
+.sec .body{padding:0 11px 11px}
+.sec summary em{margin-left:auto;font:400 11px var(--mono);font-style:normal;color:var(--mut)}
+.row{display:flex;gap:6px;align-items:center;margin:6px 0}
+.row>*{flex:1;min-width:0}
+.row>.fix{flex:none}
+.lab{display:block;font-size:11.5px;color:var(--mut);margin:8px 0 3px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}
+.xyz{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.xyz label{display:flex;align-items:center;gap:4px;margin:0}
+.ax{font:600 10px var(--mono);width:10px;text-align:center}.ax.x{color:#ff8a8a}.ax.y{color:#8dffa8}.ax.z{color:#8fb4ff}
+.btn{background:var(--panel);border:1px solid var(--line2);border-radius:var(--r);padding:7px 9px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;width:100%}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);font-weight:600}
+.btn.pri:hover{filter:brightness(1.08);color:var(--acc-ink)}
+.btn.dng:hover{border-color:var(--err);color:var(--err)}
+.btn.sm{padding:5px 7px;font-size:12px}
+.btn.on{border-color:var(--acc);color:var(--acc);background:rgba(245,165,36,.1)}
+.btn:disabled{opacity:.4;cursor:default}
+input[type=number],input[type=text],input[type=password],input[type=email],select,textarea{width:100%;background:#10131a;border:1px solid var(--line2);border-radius:6px;padding:6px 8px;outline:none;min-width:0}
+input[type=number]{font-family:var(--mono);font-size:12px;padding:5px 6px;-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+textarea{resize:vertical;min-height:64px}
+input[type=range]{width:100%;accent-color:var(--acc);margin:2px 0}
+input[type=color]{width:100%;height:30px;border:1px solid var(--line2);border-radius:6px;background:none;padding:2px}
+input[type=checkbox]{accent-color:var(--acc)}
+.chk{display:flex;align-items:center;gap:7px;margin:6px 0;color:var(--text)}
+.note{font-size:11.5px;color:var(--mut);margin:6px 0 0}
+.val{font:12px var(--mono);color:var(--info)}
+.kv{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dashed var(--line)}
+.kv:last-child{border-bottom:0}
+.kv span:first-child{color:var(--mut)}
+.kv span:last-child{font:12px var(--mono);color:var(--info);text-align:right}
+.shapes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.shapes .btn{flex-direction:column;padding:8px 4px;font-size:11.5px}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.sw{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.sw button{padding:0;border:1px solid var(--line2);border-radius:6px;width:36px;height:24px}
+.sw button:hover{border-color:var(--acc)}
+
+/* ---- lista de objetos ---- */
+#objList{display:flex;flex-direction:column;gap:3px;max-height:190px;overflow-y:auto}
+.orow{display:flex;align-items:center;gap:2px;padding:2px 4px;border-radius:6px;background:#10131a;border:1px solid transparent}
+.orow.sel{border-color:var(--acc);background:rgba(245,165,36,.08)}
+.orow .nm{flex:1;min-width:0;padding:4px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.orow .ib{width:26px;height:26px}
+.orow .ib .ic{width:15px;height:15px}
+.orow.off .nm{opacity:.45}
+.empty{color:var(--mut);padding:8px;text-align:center}
+
+/* ---- barra de estado ---- */
+#status{display:flex;align-items:center;gap:16px;padding:0 12px;background:var(--bar);border-top:1px solid var(--line);font:11.5px var(--mono);color:var(--mut);white-space:nowrap;overflow:hidden}
+#status b{color:var(--info);font-weight:500}
+#status .warn{color:var(--err)}
+
+/* ---- modales y avisos ---- */
+.modal{position:fixed;inset:0;background:rgba(6,8,11,.74);display:none;align-items:center;justify-content:center;z-index:150;padding:16px;backdrop-filter:blur(4px)}
+.modal.open{display:flex}
+.card{background:var(--panel);border:1px solid var(--line2);border-radius:14px;max-width:460px;width:100%;max-height:90vh;overflow:auto;padding:22px}
+.card h2{margin:0 0 4px;font-size:18px;font-weight:600}
+.card p{color:var(--mut);margin:4px 0 12px}
+.card .tabs2{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:12px 0}
+.msg{min-height:18px;font-size:12px;margin:8px 0 0;color:var(--err)}
+.msg.ok{color:var(--ok)}
+table.keys{width:100%;border-collapse:collapse;margin-top:8px}
+table.keys td{padding:4px 6px;border-bottom:1px dashed var(--line)}
+table.keys td:first-child{font:12px var(--mono);color:var(--acc);white-space:nowrap}
+#toasts{position:fixed;bottom:38px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;align-items:center;z-index:200;pointer-events:none;width:max-content;max-width:92vw}
+.toast{pointer-events:auto;background:var(--panel2);border:1px solid var(--line2);border-left:3px solid var(--info);padding:8px 12px;border-radius:8px;display:flex;gap:12px;align-items:center;box-shadow:0 8px 22px rgba(0,0,0,.5)}
+.toast.err{border-left-color:var(--err)}.toast.ok{border-left-color:var(--ok)}.toast.warn{border-left-color:var(--acc)}
+.toast button{background:none;border:1px solid var(--line2);border-radius:6px;padding:3px 8px;color:var(--acc)}
+#aiLog{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;margin-top:8px}
+#aiLog div{padding:7px 9px;border-radius:8px;background:#10131a;white-space:pre-wrap;word-break:break-word}
+#aiLog .me{background:rgba(245,165,36,.1)}
+#fatal{display:none;position:fixed;inset:0;z-index:300;background:var(--bg);align-items:center;justify-content:center;text-align:center;padding:24px}
+#fatal.show{display:flex}
+
+@media (max-width:900px){
+  #main{grid-template-columns:44px 1fr}
+  #side{position:absolute;top:0;right:0;bottom:0;width:min(92vw,350px);z-index:30;transform:translateX(102%);transition:transform .2s;box-shadow:-10px 0 30px rgba(0,0,0,.5)}
+  #side.open{transform:none}
+  #btnPanel{display:inline-grid}
+  #hint{max-width:calc(100% - 20px);top:52px}
+  #viewbar{left:10px;right:auto;overflow-x:auto;max-width:calc(100% - 20px)}
+  .brand span{display:none}
+  #status .hide-s{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-select" viewBox="0 0 24 24"><path d="M5 3l13 7.5-5.5 1.6L10 18z"/></symbol>
+<symbol id="i-move" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></symbol>
+<symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></symbol>
+<symbol id="i-scale" viewBox="0 0 24 24"><path d="M4 20h9v-9H4z"/><path d="M14 10l6-6M15 4h5v5"/></symbol>
+<symbol id="i-ruler" viewBox="0 0 24 24"><path d="M3.5 16.5l13-13 4 4-13 13z"/><path d="M8 9l2 2M11 6l2 2M5.5 12.5l2 2"/></symbol>
+<symbol id="i-sculpt" viewBox="0 0 24 24"><path d="M12 3c4.5 0 8 3.4 7 8-.7 3-2.6 4-2.6 7 0 2-2.6 3-5.4 3-4 0-7-3-7-7 0-3 1-4.6 2-6.4C7.2 5 9 3 12 3z"/></symbol>
+<symbol id="i-cut" viewBox="0 0 24 24"><circle cx="6" cy="6.5" r="2.5"/><circle cx="6" cy="17.5" r="2.5"/><path d="M8 8l12 9M8 16L20 7"/></symbol>
+<symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5L12 12l8-4.5M12 12v9"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-mesh" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16M6 4v16M12 4v16M18 4v16"/></symbol>
+<symbol id="i-ai" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6C3.8 8.4 2 12 2 12s4 7 10 7c1.6 0 3-.4 4.3-1"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-unlock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 8L4 13l5 5"/><path d="M4 13h10a5 5 0 0 1 0 8"/></symbol>
+<symbol id="i-redo" viewBox="0 0 24 24"><path d="M15 8l5 5-5 5"/><path d="M20 13H10a5 5 0 0 0 0 8"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l4 4v14H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></symbol>
+<symbol id="i-focus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></symbol>
+</defs></svg>
+
+<div id="app">
+  <header id="topbar">
+    <div class="brand"><i>YC</i>Editor 3D <span>· diseño para impresión</span></div>
+
+    <div class="menu"><button class="menu-btn">Archivo</button><div class="menu-list">
+      <button class="mi" data-act="newProject">Nuevo proyecto</button>
+      <button class="mi" data-act="openProject">Abrir proyecto (.yc3d)…</button>
+      <button class="mi" data-act="saveProject">Guardar proyecto<kbd>Ctrl S</kbd></button>
+      <button class="mi" data-act="restoreSession">Restaurar sesión anterior</button>
+      <div class="msep"></div>
+      <button class="mi" data-act="importPick">Importar modelo…<kbd>STL OBJ GLB</kbd></button>
+      <button class="mi" data-act="exportModal">Exportar…<kbd>Ctrl E</kbd></button>
+    </div></div>
+
+    <div class="menu"><button class="menu-btn">Editar</button><div class="menu-list">
+      <button class="mi" data-act="undo">Deshacer<kbd>Ctrl Z</kbd></button>
+      <button class="mi" data-act="redo">Rehacer<kbd>Ctrl Y</kbd></button>
+      <div class="msep"></div>
+      <button class="mi" data-act="duplicate">Duplicar<kbd>Ctrl D</kbd></button>
+      <button class="mi" data-act="delete">Eliminar<kbd>Supr</kbd></button>
+      <button class="mi" data-act="deselect">Deseleccionar<kbd>Esc</kbd></button>
+    </div></div>
+
+    <div class="menu"><button class="menu-btn">Añadir</button><div class="menu-list">
+      <button class="mi" data-act="shape" data-arg="box">Cubo</button>
+      <button class="mi" data-act="shape" data-arg="sphere">Esfera</button>
+      <button class="mi" data-act="shape" data-arg="cylinder">Cilindro</button>
+      <button class="mi" data-act="shape" data-arg="cone">Cono</button>
+      <button class="mi" data-act="shape" data-arg="torus">Toro</button>
+      <button class="mi" data-act="shape" data-arg="capsule">Cápsula</button>
+      <button class="mi" data-act="shape" data-arg="pyramid">Pirámide</button>
+      <button class="mi" data-act="shape" data-arg="hex">Prisma hexagonal</button>
+      <button class="mi" data-act="shape" data-arg="wedge">Cuña</button>
+      <button class="mi" data-act="shape" data-arg="tube">Tubo</button>
+      <button class="mi" data-act="shape" data-arg="plate">Placa</button>
+      <div class="msep"></div>
+      <button class="mi" data-act="tab" data-arg="create">Texto 3D y plantillas…</button>
+      <button class="mi" data-act="refPick">Imagen de referencia…</button>
+    </div></div>
+
+    <div class="menu"><button class="menu-btn">Vista</button><div class="menu-list">
+      <button class="mi" data-act="view" data-arg="front">Frente<kbd>1</kbd></button>
+      <button class="mi" data-act="view" data-arg="back">Atrás<kbd>2</kbd></button>
+      <button class="mi" data-act="view" data-arg="right">Derecha<kbd>3</kbd></button>
+      <button class="mi" data-act="view" data-arg="left">Izquierda<kbd>4</kbd></button>
+      <button class="mi" data-act="view" data-arg="top">Superior<kbd>5</kbd></button>
+      <button class="mi" data-act="view" data-arg="bottom">Inferior<kbd>6</kbd></button>
+      <button class="mi" data-act="view" data-arg="iso">Isométrica<kbd>0</kbd></button>
+      <div class="msep"></div>
+      <button class="mi" data-act="toggleOrtho">Cámara ortográfica / perspectiva<kbd>O</kbd></button>
+      <button class="mi" data-act="focus">Enfocar selección<kbd>F</kbd></button>
+      <button class="mi" data-act="focusAll">Encuadrar todo<kbd>A</kbd></button>
+    </div></div>
+
+    <div class="menu"><button class="menu-btn">Ayuda</button><div class="menu-list">
+      <button class="mi" data-act="help">Atajos y ayuda<kbd>?</kbd></button>
+    </div></div>
+
+    <div class="sp"></div>
+    <button class="ib" data-act="undo" title="Deshacer (Ctrl+Z)" id="btnUndo"><svg class="ic"><use href="#i-undo"/></svg></button>
+    <button class="ib" data-act="redo" title="Rehacer (Ctrl+Y)" id="btnRedo"><svg class="ic"><use href="#i-redo"/></svg></button>
+    <div id="acct"><span id="acctText">Modo local</span><button class="ib" id="btnLogout" data-act="logout" title="Cerrar sesión" style="display:none;width:24px;height:24px"><svg class="ic"><use href="#i-lock"/></svg></button></div>
+    <button class="ib" id="btnPanel" data-act="togglePanel" title="Mostrar u ocultar panel"><svg class="ic"><use href="#i-panel"/></svg></button>
+  </header>
+
+  <div id="main">
+    <nav id="toolbar">
+      <button class="tool" data-act="tool" data-arg="select" title="Seleccionar (Q)"><svg class="ic"><use href="#i-select"/></svg></button>
+      <button class="tool active" data-act="tool" data-arg="move" title="Mover (G)"><svg class="ic"><use href="#i-move"/></svg></button>
+      <button class="tool" data-act="tool" data-arg="rotate" title="Rotar (R)"><svg class="ic"><use href="#i-rotate"/></svg></button>
+      <button class="tool" data-act="tool" data-arg="scale" title="Escalar (S)"><svg class="ic"><use href="#i-scale"/></svg></button>
+      <div class="tsep"></div>
+      <button class="tool" data-act="tool" data-arg="measure" title="Regla (M)"><svg class="ic"><use href="#i-ruler"/></svg></button>
+      <button class="tool" data-act="tool" data-arg="sculpt" title="Pincel de escultura (B)"><svg class="ic"><use href="#i-sculpt"/></svg></button>
+      <button class="tool" data-act="tool" data-arg="cut" title="Corte (X)"><svg class="ic"><use href="#i-cut"/></svg></button>
+    </nav>
+
+    <section id="viewport">
+      <div id="labels">
+        <div class="dl x" id="lblX"></div><div class="dl y" id="lblY"></div><div class="dl z" id="lblZ"></div>
+      </div>
+      <div id="hint">Selecciona una pieza o agrega una forma desde el panel “Crear”.</div>
+      <div id="viewbar">
+        <button data-act="toggleOrtho" id="btnOrtho" title="Perspectiva / ortográfica (O)">Persp.</button>
+        <button data-act="view" data-arg="front" title="Frente (1)">Frente</button>
+        <button data-act="view" data-arg="right" title="Derecha (3)">Der.</button>
+        <button data-act="view" data-arg="top" title="Superior (5)">Sup.</button>
+        <button data-act="view" data-arg="iso" title="Isométrica (0)">Iso</button>
+        <button data-act="focus" title="Enfocar selección (F)"><svg class="ic" style="width:15px;height:15px"><use href="#i-focus"/></svg></button>
+        <button data-act="camPanel" id="btnCam" title="Ajustes de vista y cámara"><svg class="ic" style="width:15px;height:15px"><use href="#i-gear"/></svg></button>
+      </div>
+      <div id="camPanel">
+        <span class="lab" style="margin-top:0">Velocidad de zoom <span class="val" id="vZoom"></span></span>
+        <input type="range" id="camZoom" min="0.1" max="2" step="0.05" value="0.6">
+        <span class="lab">Velocidad de giro <span class="val" id="vRot"></span></span>
+        <input type="range" id="camRot" min="0.2" max="2" step="0.05" value="0.8">
+        <span class="lab">Velocidad de desplazamiento <span class="val" id="vPan"></span></span>
+        <input type="range" id="camPan" min="0.2" max="3" step="0.05" value="1">
+        <span class="lab">Campo de visión <span class="val" id="vFov"></span></span>
+        <input type="range" id="camFov" min="20" max="90" step="1" value="45">
+        <label class="chk"><input type="checkbox" id="camDamp" checked>Movimiento suavizado</label>
+        <label class="chk"><input type="checkbox" id="camCursor" checked>Zoom hacia el cursor</label>
+        <label class="chk"><input type="checkbox" id="tDims" checked>Mostrar dimensiones de la pieza</label>
+        <label class="chk"><input type="checkbox" id="tStudio">Luz de estudio (reflejos en metal)</label>
+        <label class="chk"><input type="checkbox" id="tWireAll">Ver malla en todas las piezas</label>
+        <p class="note">Doble clic sobre una pieza: centra la cámara en ese punto.</p>
+      </div>
+    </section>
+
+    <aside id="side">
+      <div id="tabs">
+        <button class="tab active" data-act="tab" data-arg="obj"><svg class="ic"><use href="#i-layers"/></svg>Objeto</button>
+        <button class="tab" data-act="tab" data-arg="create"><svg class="ic"><use href="#i-plus"/></svg>Crear</button>
+        <button class="tab" data-act="tab" data-arg="sculpt"><svg class="ic"><use href="#i-sculpt"/></svg>Esculpir</button>
+        <button class="tab" data-act="tab" data-arg="mesh"><svg class="ic"><use href="#i-mesh"/></svg>Malla</button>
+        <button class="tab" data-act="tab" data-arg="measure"><svg class="ic"><use href="#i-ruler"/></svg>Medir</button>
+        <button class="tab" data-act="tab" data-arg="ai"><svg class="ic"><use href="#i-ai"/></svg>IA</button>
+      </div>
+
+      <!-- ===== OBJETO ===== -->
+      <div class="tabpane active" id="pane-obj">
+        <details class="sec" open><summary>Escena <em id="objCount">0</em></summary><div class="body">
+          <div id="objList"></div>
+          <div class="g2"><button class="btn sm" data-act="duplicate">Duplicar</button><button class="btn sm dng" data-act="delete">Eliminar</button></div>
+        </div></details>
+
+        <details class="sec" open><summary>Transformar</summary><div class="body">
+          <span class="lab" style="margin-top:0">Posición (mm)</span>
+          <div class="xyz"><label><b class="ax x">X</b><input type="number" id="posX" step="0.5"></label><label><b class="ax y">Y</b><input type="number" id="posY" step="0.5"></label><label><b class="ax z">Z</b><input type="number" id="posZ" step="0.5"></label></div>
+          <span class="lab">Rotación (grados)</span>
+          <div class="xyz"><label><b class="ax x">X</b><input type="number" id="rotX" step="5"></label><label><b class="ax y">Y</b><input type="number" id="rotY" step="5"></label><label><b class="ax z">Z</b><input type="number" id="rotZ" step="5"></label></div>
+          <span class="lab">Escala (factor)</span>
+          <div class="xyz"><label><b class="ax x">X</b><input type="number" id="scaX" step="0.05"></label><label><b class="ax y">Y</b><input type="number" id="scaY" step="0.05"></label><label><b class="ax z">Z</b><input type="number" id="scaZ" step="0.05"></label></div>
+          <span class="lab">Tamaño de la pieza (mm)</span>
+          <div class="xyz"><label><b class="ax x">X</b><input type="number" id="dimX" step="0.5"></label><label><b class="ax y">Y</b><input type="number" id="dimY" step="0.5"></label><label><b class="ax z">Z</b><input type="number" id="dimZ" step="0.5"></label></div>
+          <label class="chk"><input type="checkbox" id="lockProp" checked>Mantener proporciones al cambiar el tamaño</label>
+          <label class="chk"><input type="checkbox" id="snapOn">Imán: mover en pasos exactos</label>
+          <div class="row"><input type="number" id="snapMm" value="1" step="0.5" min="0.1" title="Paso en mm"><input type="number" id="snapDeg" value="15" step="5" min="1" title="Paso en grados"></div>
+        </div></details>
+
+        <details class="sec"><summary>Colocar y espejo</summary><div class="body">
+          <div class="g2">
+            <button class="btn sm" data-act="floor">Apoyar en la plataforma</button>
+            <button class="btn sm" data-act="centerOrigin">Centrar en el origen</button>
+            <button class="btn sm" data-act="centerPivot">Centrar el pivote</button>
+            <button class="btn sm" data-act="resetRot">Quitar rotación</button>
+          </div>
+          <span class="lab">Copia en espejo (plano en el origen)</span>
+          <div class="g3"><button class="btn sm" data-act="mirror" data-arg="x">Espejo X</button><button class="btn sm" data-act="mirror" data-arg="y">Espejo Y</button><button class="btn sm" data-act="mirror" data-arg="z">Espejo Z</button></div>
+        </div></details>
+
+        <details class="sec"><summary>Repetir (patrones)</summary><div class="body">
+          <span class="lab" style="margin-top:0">Lineal: copias y separación (mm)</span>
+          <div class="row"><input type="number" id="arrN" value="3" min="2" max="60" step="1" style="flex:.6"><input type="number" id="arrDX" value="30" step="1"><input type="number" id="arrDY" value="0" step="1"><input type="number" id="arrDZ" value="0" step="1"></div>
+          <button class="btn sm" data-act="arrayLinear">Crear patrón lineal</button>
+          <span class="lab">Circular alrededor del eje vertical (Y)</span>
+          <div class="row"><input type="number" id="arrCN" value="6" min="2" max="60" step="1"><button class="btn sm" data-act="arrayCircular">Crear patrón circular</button></div>
+        </div></details>
+
+        <details class="sec"><summary>Material</summary><div class="body">
+          <input type="color" id="matColor" value="#c9ced6">
+          <div class="sw" id="matPresets"></div>
+          <span class="lab">Metal <span class="val" id="vMetal"></span></span><input type="range" id="matMetal" min="0" max="1" step="0.05" value="0.05">
+          <span class="lab">Rugosidad <span class="val" id="vRough"></span></span><input type="range" id="matRough" min="0.05" max="1" step="0.05" value="0.55">
+          <span class="lab">Opacidad <span class="val" id="vOpac"></span></span><input type="range" id="matOpacity" min="0.1" max="1" step="0.05" value="1">
+          <label class="chk"><input type="checkbox" id="matFlat">Sombreado plano (caras visibles)</label>
+          <label class="chk"><input type="checkbox" id="matWire">Ver malla de esta pieza</label>
+        </div></details>
+      </div>
+
+      <!-- ===== CREAR ===== -->
+      <div class="tabpane" id="pane-create">
+        <details class="sec" open><summary>Formas básicas</summary><div class="body">
+          <div class="row"><label class="lab fix" style="margin:0">Tamaño (mm)</label><input type="number" id="shapeSize" value="20" min="1" step="1"></div>
+          <div class="row"><label class="lab fix" style="margin:0">Detalle</label><select id="shapeDetail"><option value="lo">Normal (para ensamblar)</option><option value="hi">Alto (para esculpir)</option></select></div>
+          <div class="shapes">
+            <button class="btn" data-act="shape" data-arg="box">Cubo</button>
+            <button class="btn" data-act="shape" data-arg="sphere">Esfera</button>
+            <button class="btn" data-act="shape" data-arg="cylinder">Cilindro</button>
+            <button class="btn" data-act="shape" data-arg="cone">Cono</button>
+            <button class="btn" data-act="shape" data-arg="torus">Toro</button>
+            <button class="btn" data-act="shape" data-arg="capsule">Cápsula</button>
+            <button class="btn" data-act="shape" data-arg="pyramid">Pirámide</button>
+            <button class="btn" data-act="shape" data-arg="hex">Prisma hex.</button>
+            <button class="btn" data-act="shape" data-arg="wedge">Cuña</button>
+            <button class="btn" data-act="shape" data-arg="tube">Tubo</button>
+            <button class="btn" data-act="shape" data-arg="plate">Placa</button>
+          </div>
+        </div></details>
+
+        <details class="sec" open><summary>Plantillas de inicio</summary><div class="body">
+          <p class="note" style="margin-top:0">Armadas con formas básicas: sirven como punto de partida para editar.</p>
+          <div class="g2">
+            <button class="btn sm" data-act="template" data-arg="peana">Peana para figura</button>
+            <button class="btn sm" data-act="template" data-arg="rueda">Rueda de auto</button>
+            <button class="btn sm" data-act="template" data-arg="soporte">Soporte de celular</button>
+            <button class="btn sm" data-act="template" data-arg="llavero">Llavero con nombre</button>
+            <button class="btn sm" data-act="template" data-arg="maceta">Maceta</button>
+          </div>
+        </div></details>
+
+        <details class="sec"><summary>Texto 3D</summary><div class="body">
+          <input type="text" id="txtValue" placeholder="Texto" value="YC">
+          <div class="row"><input type="number" id="txtSize" value="10" min="1" step="1" title="Alto de letra (mm)"><input type="number" id="txtDepth" value="3" min="0.5" step="0.5" title="Grosor (mm)"></div>
+          <p class="note" style="margin-top:0">Alto de letra y grosor, en mm.</p>
+          <button class="btn sm" data-act="addText">Crear texto</button>
+        </div></details>
+
+        <details class="sec"><summary>Importar y referencias</summary><div class="body">
+          <span class="lab" style="margin-top:0">Importar modelo (STL, OBJ, GLB, GLTF)</span>
+          <div class="row"><select id="impUnit"><option value="1">Milímetros</option><option value="10">Centímetros</option><option value="25.4">Pulgadas</option></select></div>
+          <label class="chk"><input type="checkbox" id="impZup" checked>El archivo usa Z hacia arriba (STL de slicers y CAD)</label>
+          <button class="btn sm" data-act="importPick">Elegir archivo…</button>
+          <span class="lab">STL guía (fantasma, no editable)</span>
+          <div class="g2"><button class="btn sm" data-act="guidePick">Cargar guía…</button><button class="btn sm" data-act="guideClear">Quitar guía</button></div>
+          <span class="lab">Imagen de referencia (planos, fotos)</span>
+          <div class="row"><input type="number" id="refWidth" value="200" min="10" step="10" title="Ancho en mm"><select id="refPlane"><option value="front">De frente</option><option value="side">De lado</option><option value="top">Desde arriba</option></select></div>
+          <span class="lab">Opacidad de referencias <span class="val" id="vRef"></span></span>
+          <input type="range" id="refOpacity" min="0.1" max="1" step="0.05" value="0.5">
+          <button class="btn sm" data-act="refPick">Elegir imagen…</button>
+          <p class="note">Las referencias no se exportan ni se miden. Se seleccionan desde la lista de escena.</p>
+        </div></details>
+      </div>
+
+      <!-- ===== ESCULPIR ===== -->
+      <div class="tabpane" id="pane-sculpt">
+        <details class="sec" open><summary>Pincel</summary><div class="body">
+          <button class="btn pri" data-act="tool" data-arg="sculpt">Activar pincel de escultura</button>
+          <span class="lab">Tipo de pincel</span>
+          <div class="chips">
+            <button class="btn sm on" data-act="sculptMode" data-arg="draw">Empujar</button>
+            <button class="btn sm" data-act="sculptMode" data-arg="smooth">Suavizar</button>
+            <button class="btn sm" data-act="sculptMode" data-arg="inflate">Inflar</button>
+            <button class="btn sm" data-act="sculptMode" data-arg="flatten">Aplanar</button>
+            <button class="btn sm" data-act="sculptMode" data-arg="pinch">Pellizcar</button>
+            <button class="btn sm" data-act="sculptMode" data-arg="grab">Arrastrar</button>
+          </div>
+          <span class="lab">Radio (mm) <span class="val" id="vSR"></span></span>
+          <input type="range" id="sRadius" min="1" max="60" step="0.5" value="8">
+          <span class="lab">Fuerza <span class="val" id="vSS"></span></span>
+          <input type="range" id="sStrength" min="1" max="100" step="1" value="35">
+          <span class="lab">Caída del borde</span>
+          <select id="sFalloff"><option value="smooth">Suave</option><option value="linear">Lineal</option><option value="firm">Firme</option></select>
+          <label class="chk"><input type="checkbox" id="sSink">Hundir (o mantén Alt)</label>
+          <label class="chk"><input type="checkbox" id="sSym">Simetría en X (pieza centrada)</label>
+          <p class="note">Shift + arrastrar mueve la cámara. Arrastrar fuera de la pieza gira la vista. Con “Arrastrar” no aplica la simetría.</p>
+        </div></details>
+        <details class="sec" open><summary>Densidad de malla <em id="sTris">—</em></summary><div class="body">
+          <p class="note" style="margin-top:0">Para detalles finos la malla necesita más triángulos. Subdividir mantiene la forma exacta.</p>
+          <button class="btn sm" data-act="subdivide">Subdividir (x4 triángulos)</button>
+        </div></details>
+      </div>
+
+      <!-- ===== MALLA ===== -->
+      <div class="tabpane" id="pane-mesh">
+        <details class="sec" open><summary>Corte por plano</summary><div class="body">
+          <div class="row"><select id="cutAxis"><option value="x">Plano X</option><option value="y" selected>Plano Y (altura)</option><option value="z">Plano Z</option></select>
+          <select id="cutSide"><option value="neg">Conservar lado − </option><option value="pos">Conservar lado +</option><option value="both">Dividir en dos</option></select></div>
+          <span class="lab">Posición del plano (mm)</span>
+          <input type="range" id="cutPos" min="0" max="100" step="0.1" value="0">
+          <input type="number" id="cutPosNum" step="0.1" value="0">
+          <label class="chk"><input type="checkbox" id="cutCap" checked>Tapar el corte (pieza cerrada)</label>
+          <div class="g2"><button class="btn pri" data-act="cutApply">Aplicar corte</button><button class="btn" data-act="cutBelow">Cortar bajo la plataforma</button></div>
+          <p class="note">El plano naranja muestra dónde corta. “Tapar” usa operaciones booleanas y necesita una malla cerrada; sin tapar corta cualquier malla y deja el corte abierto.</p>
+        </div></details>
+
+        <details class="sec"><summary>Caja de corte (borrar sobrantes)</summary><div class="body">
+          <p class="note" style="margin-top:0">Crea una caja roja, muévela y escálala sobre lo que sobra y aplícala a la pieza seleccionada.</p>
+          <button class="btn sm" data-act="cutterBox">Crear caja de corte</button>
+          <div class="g2"><button class="btn sm pri" data-act="cutBoxApply">Restar de la pieza</button><button class="btn sm dng" data-act="cutBoxClear">Quitar cajas</button></div>
+        </div></details>
+
+        <details class="sec"><summary>Booleanas</summary><div class="body">
+          <span class="lab" style="margin-top:0">Pieza A</span><select id="boolA"></select>
+          <span class="lab">Pieza B</span><select id="boolB"></select>
+          <div class="g2">
+            <button class="btn sm" data-act="boolUnion">Unir</button>
+            <button class="btn sm" data-act="boolSub">Restar A − B</button>
+            <button class="btn sm" data-act="boolInter">Intersección</button>
+            <button class="btn sm" data-act="boolMerge">Combinar sin booleana</button>
+          </div>
+        </div></details>
+
+        <details class="sec"><summary>Reparar y optimizar</summary><div class="body">
+          <div class="row"><input type="number" id="weldTol" value="0.01" step="0.01" min="0.0001" title="Tolerancia en mm"><button class="btn sm" data-act="weld">Soldar vértices</button></div>
+          <div class="g2"><button class="btn sm" data-act="flip">Invertir normales</button><button class="btn sm" data-act="bakeScale">Fijar escala</button></div>
+          <div class="row"><input type="number" id="smoothIter" value="3" min="1" max="30" step="1" title="Repeticiones"><button class="btn sm" data-act="smoothMesh">Suavizar superficie</button></div>
+          <div class="row"><input type="number" id="simpCell" value="0.5" min="0.05" step="0.05" title="Tamaño de celda en mm"><button class="btn sm" data-act="simplify">Simplificar malla</button></div>
+          <p class="note">Simplificar agrupa vértices dentro de cada celda (mm): más celda = menos triángulos y menos detalle.</p>
+        </div></details>
+      </div>
+
+      <!-- ===== MEDIR ===== -->
+      <div class="tabpane" id="pane-measure">
+        <details class="sec" open><summary>Regla</summary><div class="body">
+          <button class="btn pri" data-act="tool" data-arg="measure">Activar regla</button>
+          <label class="chk"><input type="checkbox" id="mSnap" checked>Imantar al vértice más cercano</label>
+          <button class="btn sm" data-act="measureClear">Borrar mediciones</button>
+          <p class="note">Toca dos puntos de la pieza. Cada medida se muestra en mm y cm, con la diferencia en cada eje.</p>
+        </div></details>
+        <details class="sec" open><summary>Medidas de la pieza</summary><div class="body">
+          <div class="kv"><span>Ancho (X)</span><span id="mdX">—</span></div>
+          <div class="kv"><span>Alto (Y)</span><span id="mdY">—</span></div>
+          <div class="kv"><span>Fondo (Z)</span><span id="mdZ">—</span></div>
+          <div class="kv"><span>Volumen</span><span id="mdVol">—</span></div>
+          <div class="kv"><span>Triángulos</span><span id="mdTris">—</span></div>
+          <div class="kv"><span>Plataforma</span><span id="mdFit">—</span></div>
+        </div></details>
+        <details class="sec"><summary>Plataforma de impresión</summary><div class="body">
+          <span class="lab" style="margin-top:0">Ancho, fondo y alto útil (mm)</span>
+          <div class="xyz"><input type="number" id="plateW" value="200" min="20" step="5"><input type="number" id="plateD" value="200" min="20" step="5"><input type="number" id="plateH" value="200" min="20" step="5"></div>
+          <label class="chk"><input type="checkbox" id="tPlate" checked>Mostrar cuadrícula (10 mm)</label>
+          <label class="chk"><input type="checkbox" id="tVol">Mostrar volumen de impresión</label>
+          <p class="note">Escribe las medidas de tu impresora; la caja se pone roja si la pieza no cabe.</p>
+        </div></details>
+      </div>
+
+      <!-- ===== IA ===== -->
+      <div class="tabpane" id="pane-ai">
+        <details class="sec" open><summary>Conexión con Gemini</summary><div class="body">
+          <input type="password" id="aiKey" placeholder="Tu clave de API de Gemini" autocomplete="off">
+          <input type="text" id="aiModel" list="aiModels" style="margin-top:6px" placeholder="Modelo">
+          <datalist id="aiModels"><option value="gemini-3.1-flash-lite"><option value="gemini-3-flash-preview"><option value="gemini-2.5-flash"></datalist>
+          <button class="btn sm" style="margin-top:6px" data-act="aiSaveKey">Guardar en este navegador</button>
+          <p class="note">La clave se queda solo en este navegador y viaja únicamente a Google. Si el modelo falla, cambia el nombre por uno vigente.</p>
+        </div></details>
+        <details class="sec" open><summary>Diseñar con IA</summary><div class="body">
+          <textarea id="aiPrompt" placeholder="Ej.: auto deportivo de colección, 90 mm de largo, con cuatro ruedas separadas"></textarea>
+          <label class="lab">Foto o boceto de referencia (opcional)</label>
+          <input type="file" id="aiImg" accept="image/*">
+          <div class="g2" style="margin-top:8px"><button class="btn pri" data-act="aiGenerate">Generar bloques 3D</button><button class="btn" data-act="aiAsk">Preguntar</button></div>
+          <p class="note">“Generar” arma la pieza con formas básicas (un boceto tridimensional que luego refinas con esculpir y cortar). No crea mallas orgánicas detalladas.</p>
+          <div id="aiLog"></div>
+        </div></details>
+      </div>
+    </aside>
+  </div>
+
+  <footer id="status">
+    <span id="stHint">Listo</span>
+    <span id="stSel" class="hide-s">Sin selección</span>
+    <span class="sp"></span>
+    <span id="stScene" class="hide-s">0 piezas</span>
+    <span id="saveState">Sin guardar</span>
+  </footer>
+</div>
+
+<input type="file" id="fileImport" accept=".stl,.obj,.gltf,.glb,.yc3d" style="display:none">
+<input type="file" id="fileGuide" accept=".stl" style="display:none">
+<input type="file" id="fileRef" accept="image/*" style="display:none">
+<input type="file" id="fileProject" accept=".yc3d,.json" style="display:none">
+
+<div id="toasts"></div>
+
+<div class="modal" id="authModal"><div class="card">
+  <h2>Entra para diseñar</h2>
+  <p>Cuentas nuevas: 3 días de prueba con todas las funciones.</p>
+  <input type="email" id="authEmail" placeholder="Correo electrónico" autocomplete="email">
+  <input type="password" id="authPass" placeholder="Contraseña (mínimo 6 caracteres)" autocomplete="current-password" style="margin-top:8px">
+  <div class="tabs2"><button class="btn pri" id="btnLogin">Entrar</button><button class="btn" id="btnRegister">Crear cuenta</button></div>
+  <button class="btn" id="btnGoogle">Continuar con Google</button>
+  <button class="btn sm" id="btnReset" style="margin-top:8px;border-color:transparent;color:var(--mut)">Olvidé mi contraseña</button>
+  <div class="msg" id="authMsg"></div>
+</div></div>
+
+<div class="modal" id="payModal"><div class="card">
+  <h2 id="payTitle">Prueba terminada</h2>
+  <p id="payText">Tu prueba de 3 días terminó. Puedes seguir viendo y editando, pero para exportar y usar la IA necesitas el plan completo.</p>
+  <div class="g2"><button class="btn pri" data-act="contactWA">Escribir por WhatsApp</button><button class="btn" data-act="closeModal" data-arg="payModal">Cerrar</button></div>
+</div></div>
+
+<div class="modal" id="exportModal"><div class="card">
+  <h2>Exportar</h2>
+  <span class="lab">Formato</span>
+  <select id="expFormat"><option value="stl">STL binario (impresión 3D)</option><option value="obj">OBJ</option><option value="glb">GLB (con colores)</option></select>
+  <label class="chk"><input type="checkbox" id="expSel">Solo la pieza seleccionada</label>
+  <label class="chk"><input type="checkbox" id="expZup" checked>Z hacia arriba (para slicers como Chitubox y Cura; solo STL)</label>
+  <div class="g2" style="margin-top:12px"><button class="btn pri" data-act="doExport">Exportar</button><button class="btn" data-act="closeModal" data-arg="exportModal">Cancelar</button></div>
+</div></div>
+
+<div class="modal" id="helpModal"><div class="card" style="max-width:560px">
+  <h2>Atajos y ayuda</h2>
+  <table class="keys">
+    <tr><td>Q · G · R · S</td><td>Seleccionar, mover, rotar, escalar</td></tr>
+    <tr><td>M · B · X</td><td>Regla, pincel de escultura, corte</td></tr>
+    <tr><td>1 2 3 4 5 6 0</td><td>Frente, atrás, derecha, izquierda, superior, inferior, isométrica</td></tr>
+    <tr><td>F · A · O</td><td>Enfocar selección, encuadrar todo, cámara ortográfica</td></tr>
+    <tr><td>Ctrl Z · Ctrl Y</td><td>Deshacer y rehacer</td></tr>
+    <tr><td>Ctrl D · Supr</td><td>Duplicar y eliminar</td></tr>
+    <tr><td>Ctrl S · Ctrl E</td><td>Guardar proyecto y exportar</td></tr>
+    <tr><td>Rueda</td><td>Zoom suave hacia el cursor</td></tr>
+    <tr><td>Arrastrar · Shift o clic derecho</td><td>Girar la cámara · desplazarla</td></tr>
+    <tr><td>Doble clic</td><td>Centrar la cámara en ese punto</td></tr>
+    <tr><td>Alt (con el pincel)</td><td>Hundir en vez de empujar</td></tr>
+    <tr><td>Esc</td><td>Salir de la herramienta o deseleccionar</td></tr>
+  </table>
+  <p style="margin-top:12px">Unidad de trabajo: 1 unidad = 1 mm. El STL exportado ya sale con Z hacia arriba.</p>
+  <button class="btn" data-act="closeModal" data-arg="helpModal">Cerrar</button>
+</div></div>
+
+<div id="fatal"><div><h2>No se pudo iniciar el editor 3D</h2><p style="color:var(--mut)">Las librerías 3D se cargan desde internet. Revisa tu conexión y abre la página desde un servidor (<code>python3 -m http.server 8080</code>) o desde GitHub Pages, no como archivo suelto.</p><button class="btn" onclick="location.reload()" style="max-width:200px;margin:12px auto">Reintentar</button></div></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script>
+  /* Si las librerías 3D no cargan en 10 s, muestra un aviso claro en vez de una pantalla vacía */
+  setTimeout(function () { if (!window.__yc_ready) document.getElementById('fatal').classList.add('show'); }, 10000);
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { TransformControls } from "three/addons/controls/TransformControls.js";
+import { STLLoader } from "three/addons/loaders/STLLoader.js";
+import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { FontLoader } from "three/addons/loaders/FontLoader.js";
+import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
+import { STLExporter } from "three/addons/exporters/STLExporter.js";
+import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
+import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+import { mergeVertices, mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+/* =====================================================================
+   1. UTILIDADES
+   ===================================================================== */
+const $ = (id) => document.getElementById(id);
+const on = (id, ev, fn, opt) => {
+  const el = typeof id === 'string' ? $(id) : id;
+  if (!el) { console.warn('[YC] falta #' + id); return; }
+  el.addEventListener(ev, fn, opt);
+};
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const rad = THREE.MathUtils.degToRad, deg = THREE.MathUtils.radToDeg;
+const fmt = (v, d = 2) => (Number.isFinite(v) ? v.toFixed(d) : '—');
+const num = (id, def = 0) => { const v = parseFloat($(id)?.value); return Number.isFinite(v) ? v : def; };
+const icon = (n) => `<svg class="ic"><use href="#i-${n}"/></svg>`;
+const ACCENT = 0xf5a524;
+
+function toast(msg, opts = {}) {
+  const box = $('toasts'); if (!box) return;
+  const t = document.createElement('div');
+  t.className = 'toast ' + (opts.type || '');
+  const s = document.createElement('span'); s.textContent = msg; t.appendChild(s);
+  if (opts.action) {
+    const b = document.createElement('button'); b.textContent = opts.action.label;
+    b.onclick = () => { opts.action.fn(); t.remove(); }; t.appendChild(b);
+  }
+  box.appendChild(t);
+  setTimeout(() => t.remove(), opts.ms || 4200);
+}
+let lastErr = '', lastErrT = 0;
+function showError(msg) {
+  const t = Date.now(); if (msg === lastErr && t - lastErrT < 3000) return;
+  lastErr = msg; lastErrT = t; console.error(msg); toast(msg, { type: 'err', ms: 7000 });
+}
+window.addEventListener('error', (e) => showError('Error: ' + e.message));
+window.addEventListener('unhandledrejection', (e) => showError('Error: ' + (e.reason?.message || e.reason)));
+function setHint(t) { const h = $('hint'); if (h) h.textContent = t; }
+function busy(on_, text) { const s = $('stHint'); if (s) s.textContent = on_ ? (text || 'Procesando…') : 'Listo'; }
+const tick = () => new Promise((r) => setTimeout(r, 30));   // deja respirar a la interfaz
+
+/* =====================================================================
+   2. ESTADO GLOBAL
+   ===================================================================== */
+const S = {
+  tool: 'move', snap: false, snapMm: 1, snapDeg: 15, showDims: true, ortho: false, studio: false, wireAll: false,
+  plate: { w: 200, d: 200, h: 200, grid: true, vol: false },
+};
+const objects = [];          // todas las piezas editables (incluye cajas de corte y referencias)
+let selected = null;
+let activeTab = 'obj';
+
+/* =====================================================================
+   3. RENDERIZADOR, ESCENA Y CÁMARAS
+   ===================================================================== */
+const viewport = $('viewport');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+renderer.setClearColor(0x000000, 0);
+viewport.insertBefore(renderer.domElement, viewport.firstChild);
+const el = renderer.domElement;
+
+const scene = new THREE.Scene();
+const persCam = new THREE.PerspectiveCamera(45, 1, 0.5, 20000);
+persCam.position.set(170, 130, 200);
+const ORTHO_H = 220;
+const orthoCam = new THREE.OrthographicCamera(-1, 1, 1, -1, -5000, 20000);
+let cam = persCam;
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0x3a3f4a, 0.85);
+const key = new THREE.DirectionalLight(0xffffff, 1.15);
+const fill = new THREE.DirectionalLight(0x9fd8ff, 0.3); fill.position.set(-150, 80, -120);
+scene.add(hemi, key, fill);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+let envTex = null;
+function setStudio(v) {
+  S.studio = v;
+  if (v && !envTex) envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environment = v ? envTex : null;
+  objects.forEach((o) => { if (o.material) o.material.needsUpdate = true; });
+  requestRender();
+}
+
+/* ---- plataforma de impresión (rejilla de 10 mm y volumen útil) ---- */
+const plateGroup = new THREE.Group(); scene.add(plateGroup);
+let plateVol = null;
+function buildPlate() {
+  while (plateGroup.children.length) {
+    const c = plateGroup.children.pop();
+    c.geometry?.dispose(); c.material?.dispose();
+  }
+  const { w, d, h } = S.plate;
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(w, d),
+    new THREE.MeshBasicMaterial({ color: 0x1a2029, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -0.05; floor.renderOrder = -2;
+  plateGroup.add(floor);
+
+  const minor = [], major = [];
+  for (let x = Math.ceil(-w / 20) * 10; x <= w / 2; x += 10) (Math.round(x) % 50 === 0 ? major : minor).push(x, 0, -d / 2, x, 0, d / 2);
+  for (let z = Math.ceil(-d / 20) * 10; z <= d / 2; z += 10) (Math.round(z) % 50 === 0 ? major : minor).push(-w / 2, 0, z, w / 2, 0, z);
+  const mk = (arr, color, op) => {
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+    const l = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false }));
+    l.visible = S.plate.grid; return l;
+  };
+  plateGroup.add(mk(minor, 0x3a4352, 0.5), mk(major, 0x566173, 0.85));
+  const ax = (a, b, c) => {
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(a, 3));
+    return new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: c, depthWrite: false }));
+  };
+  plateGroup.add(ax([-w / 2, 0.02, 0, w / 2, 0.02, 0], 0, 0xd85a5a), ax([0, 0.02, -d / 2, 0, 0.02, d / 2], 0, 0x5a7fd8));
+
+  plateVol = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d)),
+    new THREE.LineBasicMaterial({ color: 0x3f8f98 }));
+  plateVol.position.y = h / 2; plateVol.visible = S.plate.vol;
+  plateGroup.add(plateVol);
+  requestRender();
+}
+
+/* ---- render bajo demanda: solo dibuja cuando algo cambia (ahorra RAM y CPU) ---- */
+let dirty = true;
+function requestRender() { dirty = true; }
+const _v = new THREE.Vector3();
+const markerList = [];   // esferas de la regla (se escalan a tamaño constante en pantalla)
+
+function pxScale(p) {   // tamaño de 1 píxel en el mundo, a la profundidad de p
+  const h = viewport.clientHeight || 600;
+  if (cam === orthoCam) return (ORTHO_H / cam.zoom) / h;
+  return (2 * Math.tan(rad(cam.fov / 2)) * cam.position.distanceTo(p)) / h;
+}
+function renderFrame() {
+  key.position.copy(cam.position);                   // luz que sigue a la cámara
+  markerList.forEach((m) => m.scale.setScalar(pxScale(m.position) * 4.5));
+  renderer.render(scene, cam);
+  updateOverlays();
+}
+let camAnim = null;
+function loop() {
+  requestAnimationFrame(loop);
+  stepZoom(); stepCamAnim(performance.now());
+  if (orbit.update()) dirty = true;
+  if (dirty) { dirty = false; renderFrame(); }
+}
+
+/* =====================================================================
+   4. CONTROL DE CÁMARA
+   ===================================================================== */
+// Zoom propio: suave, con tope por golpe de rueda y hacia el cursor.
+// Se registra ANTES de OrbitControls y corta la rueda para que este no la procese.
+let zoomLog = 0; const zoomAt = { x: 0, y: 0 };
+const zoomCfg = { speed: 0.6, toCursor: true };
+el.addEventListener('wheel', (e) => {
+  e.preventDefault(); e.stopImmediatePropagation();
+  let d = e.deltaY; if (e.deltaMode === 1) d *= 16; else if (e.deltaMode === 2) d *= 100;
+  if (e.ctrlKey) d *= 6;                                   // pellizco del touchpad
+  zoomLog = clamp(zoomLog + clamp(d * 0.0012 * zoomCfg.speed, -0.35, 0.35), -1.2, 1.2);
+  const r = el.getBoundingClientRect();
+  zoomAt.x = ((e.clientX - r.left) / r.width) * 2 - 1; zoomAt.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+}, { passive: false, capture: true });
+
+const orbit = new OrbitControls(cam, el);
+orbit.enableDamping = true; orbit.dampingFactor = 0.12;
+orbit.rotateSpeed = 0.8; orbit.panSpeed = 1; orbit.zoomSpeed = 1;      // zoomSpeed solo aplica al pellizco táctil
+orbit.screenSpacePanning = true; orbit.minDistance = 2; orbit.maxDistance = 4000;
+orbit.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.PAN };
+orbit.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+orbit.target.set(0, 30, 0); orbit.update();
+orbit.addEventListener('change', requestRender);
+
+const _ray = new THREE.Raycaster(), _dir = new THREE.Vector3(), _pt = new THREE.Vector3(), _pl = new THREE.Plane(), _m2 = new THREE.Vector2();
+function stepZoom() {
+  if (Math.abs(zoomLog) < 0.0005) { zoomLog = 0; return; }
+  const step = zoomLog * 0.2; zoomLog -= step;
+  applyZoom(Math.exp(step));                               // >1 aleja, <1 acerca
+}
+function applyZoom(factor) {
+  if (cam === orthoCam) { cam.zoom = clamp(cam.zoom / factor, 0.02, 200); cam.updateProjectionMatrix(); requestRender(); return; }
+  const dist = cam.position.distanceTo(orbit.target);
+  const nd = clamp(dist * factor, orbit.minDistance, orbit.maxDistance);
+  factor = nd / dist; if (Math.abs(factor - 1) < 1e-6) return;
+  if (zoomCfg.toCursor) {
+    cam.getWorldDirection(_dir);
+    _m2.set(zoomAt.x, zoomAt.y); _ray.setFromCamera(_m2, cam);
+    _pl.setFromNormalAndCoplanarPoint(_dir.clone().negate(), orbit.target);
+    if (_ray.ray.intersectPlane(_pl, _pt)) {
+      cam.position.sub(_pt).multiplyScalar(factor).add(_pt);
+      orbit.target.sub(_pt).multiplyScalar(factor).add(_pt);
+      requestRender(); return;
+    }
+  }
+  cam.position.sub(orbit.target).multiplyScalar(factor).add(orbit.target);
+  requestRender();
+}
+
+function animateCamera(p1, t1, z1) {
+  camAnim = { t0: performance.now(), dur: 280, p0: cam.position.clone(), tg0: orbit.target.clone(), p1, tg1: t1, z0: cam.zoom, z1: z1 ?? cam.zoom };
+}
+const _Z = new THREE.Vector3(0, 0, 1);
+function stepCamAnim(now) {
+  if (!camAnim) return;
+  const a = camAnim, t = clamp((now - a.t0) / a.dur, 0, 1), k = t * t * (3 - 2 * t);
+  orbit.target.lerpVectors(a.tg0, a.tg1, k);
+  const d0 = a.p0.clone().sub(a.tg0), d1 = a.p1.clone().sub(a.tg1);
+  const l0 = d0.length(), l1 = d1.length();
+  const q0 = new THREE.Quaternion().setFromUnitVectors(_Z, d0.normalize());
+  const q1 = new THREE.Quaternion().setFromUnitVectors(_Z, d1.normalize());
+  const dir = _Z.clone().applyQuaternion(q0.slerp(q1, k));
+  cam.position.copy(orbit.target).addScaledVector(dir, l0 + (l1 - l0) * k);
+  if (cam === orthoCam) { cam.zoom = a.z0 + (a.z1 - a.z0) * k; cam.updateProjectionMatrix(); }
+  if (t >= 1) camAnim = null;
+  requestRender();
+}
+
+const VIEWS = { front: [0, 0, 1], back: [0, 0, -1], left: [-1, 0, 0], right: [1, 0, 0], top: [0, 1, 0.0001], bottom: [0, -1, 0.0001], iso: [1, 0.85, 1] };
+function setView(name) {
+  if (!VIEWS[name]) return;
+  const d = new THREE.Vector3(...VIEWS[name]).normalize();
+  const dist = cam === orthoCam ? 300 : Math.max(cam.position.distanceTo(orbit.target), 20);
+  animateCamera(orbit.target.clone().addScaledVector(d, dist), orbit.target.clone());
+}
+function frameBox(box) {
+  if (!box || box.isEmpty()) return;
+  const c = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
+  const r = Math.max(size.length() / 2, 5);
+  const dir = cam.position.clone().sub(orbit.target).normalize();
+  if (cam === orthoCam) animateCamera(c.clone().addScaledVector(dir, 300), c, ORTHO_H / (r * 2.6));
+  else animateCamera(c.clone().addScaledVector(dir, (r / Math.sin(rad(cam.fov / 2))) * 1.05), c);
+}
+function frameAll() {
+  const box = new THREE.Box3();
+  objects.forEach((o) => { if (o.visible && !o.userData.isReference) box.expandByObject(o); });
+  if (box.isEmpty()) box.set(new THREE.Vector3(-S.plate.w / 4, 0, -S.plate.d / 4), new THREE.Vector3(S.plate.w / 4, 60, S.plate.d / 4));
+  frameBox(box);
+}
+function setOrtho(v) {
+  if (v === (cam === orthoCam)) return;
+  const tgt = orbit.target, offset = cam.position.clone().sub(tgt), dirN = offset.clone().normalize();
+  if (v) {
+    const h = 2 * offset.length() * Math.tan(rad(persCam.fov / 2));
+    orthoCam.zoom = ORTHO_H / h;
+    orthoCam.position.copy(tgt).addScaledVector(dirN, 300);
+    orthoCam.quaternion.copy(persCam.quaternion); orthoCam.updateProjectionMatrix(); cam = orthoCam;
+  } else {
+    const h = ORTHO_H / orthoCam.zoom, dist = h / (2 * Math.tan(rad(persCam.fov / 2)));
+    persCam.position.copy(tgt).addScaledVector(dirN, dist);
+    persCam.quaternion.copy(orthoCam.quaternion); cam = persCam;
+  }
+  orbit.object = cam; transform.camera = cam; S.ortho = v;
+  const b = $('btnOrtho'); if (b) { b.textContent = v ? 'Orto' : 'Persp.'; b.classList.toggle('on', v); }
+  requestRender();
+}
+function resizeAll() {
+  const w = Math.max(10, viewport.clientWidth), h = Math.max(10, viewport.clientHeight), a = w / h;
+  renderer.setSize(w, h, false);
+  persCam.aspect = a; persCam.updateProjectionMatrix();
+  orthoCam.left = -ORTHO_H * a / 2; orthoCam.right = ORTHO_H * a / 2; orthoCam.top = ORTHO_H / 2; orthoCam.bottom = -ORTHO_H / 2;
+  orthoCam.updateProjectionMatrix(); requestRender();
+}
+new ResizeObserver(resizeAll).observe(viewport);
+
+// Si el navegador libera la memoria gráfica, se guarda la sesión y se avisa (antes se quedaba congelado en silencio).
+el.addEventListener('webglcontextlost', (e) => {
+  e.preventDefault(); saveSessionNow();
+  showError('El navegador liberó la memoria gráfica. Tu sesión se guardó: recarga la página para continuar.');
+});
+el.addEventListener('webglcontextrestored', () => { requestRender(); toast('Gráficos restaurados', { type: 'ok' }); });
+/* =====================================================================
+   5. PIEZAS: creación, formas y plantillas
+   ===================================================================== */
+const SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus', 'capsule', 'pyramid', 'hex', 'wedge', 'tube'];
+const SHAPE_NAMES = { box: 'Cubo', sphere: 'Esfera', cylinder: 'Cilindro', cone: 'Cono', torus: 'Toro', capsule: 'Capsula', pyramid: 'Piramide', hex: 'Prisma', wedge: 'Cuna', tube: 'Tubo', plate: 'Placa' };
+const nameCounters = {};
+const uniqueName = (base) => { nameCounters[base] = (nameCounters[base] || 0) + 1; return base + '_' + nameCounters[base]; };
+
+function baseGeo(shape, hi) {                         // geometrías de 1 unidad; el tamaño real se aplica después
+  const seg = hi ? 96 : 40, hs = hi ? 16 : 1;
+  switch (shape) {
+    case 'sphere': return new THREE.SphereGeometry(0.5, hi ? 96 : 40, hi ? 64 : 24);
+    case 'cylinder': return new THREE.CylinderGeometry(0.5, 0.5, 1, seg, hs);
+    case 'cone': return new THREE.ConeGeometry(0.5, 1, seg, hs);
+    case 'pyramid': { const g = new THREE.ConeGeometry(Math.SQRT1_2, 1, 4, hs); g.rotateY(Math.PI / 4); return g; }
+    case 'hex': return new THREE.CylinderGeometry(0.5, 0.5, 1, 6, hs);
+    case 'capsule': return new THREE.CapsuleGeometry(0.3, 0.4, hi ? 16 : 8, hi ? 48 : 24);
+    case 'torus': { const g = new THREE.TorusGeometry(0.35, 0.15, hi ? 32 : 16, hi ? 96 : 48); g.rotateX(Math.PI / 2); return g; }
+    case 'wedge': {
+      const sh = new THREE.Shape(); sh.moveTo(-0.5, -0.5); sh.lineTo(0.5, -0.5); sh.lineTo(-0.5, 0.5); sh.closePath();
+      const g = new THREE.ExtrudeGeometry(sh, { depth: 1, bevelEnabled: false }); g.translate(0, 0, -0.5); return g;
+    }
+    case 'tube': {
+      const sh = new THREE.Shape(); sh.absarc(0, 0, 0.5, 0, Math.PI * 2, false);
+      const hole = new THREE.Path(); hole.absarc(0, 0, 0.35, 0, Math.PI * 2, true); sh.holes.push(hole);
+      const g = new THREE.ExtrudeGeometry(sh, { depth: 1, bevelEnabled: false, curveSegments: hi ? 96 : 48 });
+      g.translate(0, 0, -0.5); g.rotateX(-Math.PI / 2); return g;
+    }
+    default: { const n = hi ? 12 : 1; return new THREE.BoxGeometry(1, 1, 1, n, n, n); }
+  }
+}
+function createShapeGeometry(shape, size, hi) { const g = baseGeo(shape, hi); g.scale(size[0], size[1], size[2]); return g; }
+
+function newMaterial(color = 0xc9ced6, opts = {}) {
+  return new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.55, metalness: 0.05, side: THREE.DoubleSide }, opts));
+}
+function makeMesh(geo, name, color, kind = 'mesh') {
+  const m = new THREE.Mesh(geo, newMaterial(color));
+  m.name = uniqueName(name); m.userData.kind = kind;
+  if (S.wireAll) m.material.wireframe = true;
+  return m;
+}
+function addObject(m, opts = {}) {
+  scene.add(m); objects.push(m);
+  refreshList(); markDirty(); requestRender();
+  if (!opts.noSelect) selectObject(m);
+  return m;
+}
+function dropToFloor(m) { m.updateMatrixWorld(true); const b = new THREE.Box3().setFromObject(m, true); if (!b.isEmpty()) m.position.y -= b.min.y; }
+const exportables = (onlyVisible = true) => objects.filter((o) => !o.userData.isReference && o.userData.kind !== 'cutter' && (!onlyVisible || o.visible));
+
+function addShape(shape, sizeMm) {
+  const s = sizeMm ?? clamp(num('shapeSize', 20), 1, 500);
+  const hi = $('shapeDetail')?.value === 'hi';
+  const real = shape === 'plate' ? 'box' : shape;
+  const asp = shape === 'plate' ? [1, 0.12, 1] : [1, 1, 1];
+  pushUndo();
+  const m = makeMesh(createShapeGeometry(real, [s * asp[0], s * asp[1], s * asp[2]], hi), SHAPE_NAMES[shape] || shape, 0xc9ced6);
+  dropToFloor(m); addObject(m); frameBox(new THREE.Box3().setFromObject(m));
+}
+
+function colorOf(c, def = 0xc9ced6) { return /^#[0-9a-f]{6}$/i.test(c || '') ? new THREE.Color(c).getHex() : def; }
+function buildParts(parts, baseName) {               // usado por plantillas e IA
+  if (!parts.length) return toast('No hay partes para crear', { type: 'warn' });
+  pushUndo();
+  const created = [];
+  parts.slice(0, 60).forEach((p, i) => {
+    const shape = SHAPES.includes(p.shape) ? p.shape : 'box';
+    const size = (p.size || [10, 10, 10]).map((v) => clamp(+v || 10, 0.5, 500));
+    const m = makeMesh(createShapeGeometry(shape, size, false), baseName + '_' + (i + 1), colorOf(p.color));
+    const pos = p.pos || [0, 0, 0], rot = p.rot || [0, 0, 0];
+    m.position.set(clamp(+pos[0] || 0, -500, 500), clamp(+pos[1] || 0, -500, 500), clamp(+pos[2] || 0, -500, 500));
+    m.rotation.set(rad(+rot[0] || 0), rad(+rot[1] || 0), rad(+rot[2] || 0));
+    scene.add(m); objects.push(m); created.push(m);
+  });
+  const box = new THREE.Box3(); created.forEach((m) => { m.updateMatrixWorld(true); box.expandByObject(m); });
+  if (!box.isEmpty() && box.min.y !== 0) created.forEach((m) => { m.position.y -= box.min.y; });   // el conjunto queda apoyado en la plataforma
+  refreshList(); markDirty(); selectObject(created[created.length - 1]);
+  const fb = new THREE.Box3(); created.forEach((m) => { m.updateMatrixWorld(true); fb.expandByObject(m); }); frameBox(fb);
+  return created;
+}
+const TEMPLATES = {
+  peana: [{ shape: 'cylinder', size: [60, 6, 60], pos: [0, 3, 0], color: '#3a3d44' }, { shape: 'cylinder', size: [52, 2, 52], pos: [0, 7, 0], color: '#7d828c' }],
+  rueda: [{ shape: 'torus', size: [50, 50, 50], pos: [0, 25, 0], rot: [0, 0, 90], color: '#1c1d20' }, { shape: 'cylinder', size: [28, 12, 28], pos: [0, 25, 0], rot: [0, 0, 90], color: '#b8bcc4' }],
+  soporte: [{ shape: 'box', size: [70, 6, 80], pos: [0, 3, 0], color: '#c9ced6' }, { shape: 'box', size: [70, 90, 6], pos: [0, 50, -30], rot: [-12, 0, 0], color: '#c9ced6' }, { shape: 'box', size: [70, 12, 6], pos: [0, 9, 34], color: '#c9ced6' }],
+  llavero: [{ shape: 'box', size: [60, 3, 25], pos: [0, 1.5, 0], color: '#c9ced6' }, { shape: 'torus', size: [16, 16, 16], pos: [-34, 8.5, 0], rot: [90, 0, 0], color: '#c9ced6' }],
+  maceta: [{ shape: 'cylinder', size: [50, 4, 50], pos: [0, 2, 0], color: '#b5651d' }, { shape: 'tube', size: [50, 45, 50], pos: [0, 26.5, 0], color: '#b5651d' }],
+};
+
+/* =====================================================================
+   6. HISTORIAL (deshacer / rehacer) sin copiar mallas pesadas
+   Las geometrías se comparten entre estados; solo se clona una al editarla.
+   ===================================================================== */
+const undoStack = [], redoStack = [];
+const UNDO_MAX = 30, UNDO_VERT_BUDGET = 2500000;
+function snapshot() {
+  return objects.map((o) => ({ o, g: o.geometry, p: o.position.toArray(), q: o.quaternion.toArray(), s: o.scale.toArray(),
+    c: o.material.color.getHex(), fl: !!o.material.flatShading, v: o.visible, n: o.name, lk: !!o.userData.locked }));
+}
+function liveGeometries() {
+  const set = new Set(); objects.forEach((o) => set.add(o.geometry));
+  for (const st of [undoStack, redoStack]) for (const s of st) for (const e of s) set.add(e.g);
+  return set;
+}
+function releaseSnap(snap) { const live = liveGeometries(); for (const e of snap) if (!live.has(e.g)) e.g.dispose(); }
+function enforceBudget() {
+  let guard = 0;
+  while (undoStack.length > 1 && guard++ < 60) {
+    const seen = new Set(); let v = 0;
+    for (const s of undoStack.concat(redoStack)) for (const e of s) if (!seen.has(e.g)) { seen.add(e.g); v += e.g.attributes.position.count; }
+    if (v <= UNDO_VERT_BUDGET) break;
+    releaseSnap(undoStack.shift());
+  }
+}
+function pushUndo() {                                   // se llama ANTES de modificar algo
+  undoStack.push(snapshot());
+  while (undoStack.length > UNDO_MAX) releaseSnap(undoStack.shift());
+  enforceBudget();
+  redoStack.splice(0).forEach(releaseSnap);
+  syncHistoryUI();
+}
+function restoreSnap(snap) {
+  const keep = new Set(snap.map((e) => e.o));
+  objects.slice().forEach((o) => { if (!keep.has(o)) scene.remove(o); });
+  objects.length = 0;
+  for (const e of snap) {
+    const o = e.o; if (!o.parent) scene.add(o);
+    o.geometry = e.g; o.position.fromArray(e.p); o.quaternion.fromArray(e.q); o.scale.fromArray(e.s);
+    o.material.color.setHex(e.c); o.material.flatShading = e.fl; o.material.needsUpdate = true;
+    o.visible = e.v; o.name = e.n; o.userData.locked = e.lk; objects.push(o);
+  }
+  if (selected && !objects.includes(selected)) selected = null;
+  selectObject(selected); refreshList(); markDirty();
+}
+function undo() { if (!undoStack.length || sculpt.stroke) return; redoStack.push(snapshot()); restoreSnap(undoStack.pop()); syncHistoryUI(); }
+function redo() { if (!redoStack.length || sculpt.stroke) return; undoStack.push(snapshot()); restoreSnap(redoStack.pop()); syncHistoryUI(); }
+function syncHistoryUI() {
+  document.querySelectorAll('#btnUndo').forEach((b) => (b.disabled = !undoStack.length));
+  document.querySelectorAll('#btnRedo').forEach((b) => (b.disabled = !redoStack.length));
+}
+
+/* =====================================================================
+   7. SELECCIÓN, GIZMO Y MEDIDAS
+   ===================================================================== */
+const transform = new TransformControls(cam, el);
+transform.setSize(0.8); scene.add(transform);
+function applySnap() {
+  transform.setTranslationSnap(S.snap ? S.snapMm : null);
+  transform.setRotationSnap(S.snap ? rad(S.snapDeg) : null);
+  transform.setScaleSnap(S.snap ? 0.05 : null);
+}
+let dragState = null;
+transform.addEventListener('dragging-changed', (e) => {
+  orbit.enabled = !e.value;
+  if (e.value) {
+    pushUndo();
+    dragState = selected ? { p: selected.position.clone(), q: selected.quaternion.clone(), s: selected.scale.clone() } : null;
+  } else {
+    if (dragState && selected && selected.position.equals(dragState.p) && selected.quaternion.equals(dragState.q) && selected.scale.equals(dragState.s)) {
+      undoStack.pop(); syncHistoryUI();                  // clic sin mover: no deja paso vacío en el historial
+    } else onTransformEnd();
+    dragState = null;
+  }
+});
+transform.addEventListener('change', requestRender);
+transform.addEventListener('objectChange', () => { fastBox(); syncTransformUI(); });
+
+const selBox = new THREE.Box3();
+const boxHelper = new THREE.Box3Helper(selBox, ACCENT); boxHelper.visible = false; scene.add(boxHelper);
+function fastBox() { if (!selected) { boxHelper.visible = false; return; } selBox.setFromObject(selected, false); boxHelper.visible = !selBox.isEmpty(); requestRender(); }
+function preciseBox() {
+  if (!selected) { selBox.makeEmpty(); boxHelper.visible = false; return; }
+  selected.updateMatrixWorld(true); selBox.setFromObject(selected, true); boxHelper.visible = !selBox.isEmpty();
+  const fits = !selected.userData.isReference && plateFits(selBox);
+  boxHelper.material.color.setHex(fits || selected.userData.isReference ? ACCENT : 0xff5c7a);
+  if (plateVol) plateVol.material.color.setHex(fits || !selected || selected.userData.isReference ? 0x3f8f98 : 0xff5c7a);
+}
+function plateFits(b) {
+  const { w, d, h } = S.plate, e = 0.01;
+  return b.min.x >= -w / 2 - e && b.max.x <= w / 2 + e && b.min.z >= -d / 2 - e && b.max.z <= d / 2 + e && b.min.y >= -e && b.max.y <= h + e;
+}
+function localSize(o) { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); return o.geometry.boundingBox.getSize(new THREE.Vector3()).toArray(); }
+
+function updateGizmo() {
+  const t = S.tool, isT = t === 'move' || t === 'rotate' || t === 'scale';
+  if (selected && isT && !selected.userData.locked && selected.visible) { transform.setMode(t === 'move' ? 'translate' : t); transform.attach(selected); }
+  else transform.detach();
+  requestRender();
+}
+function selectObject(o) {
+  selected = o || null;
+  updateGizmo(); preciseBox(); syncTransformUI(); syncMaterialUI(); updateInfo(); updateCutRange(); refreshList(); updateCutPreview(); requestRender();
+}
+const deselect = () => selectObject(null);
+
+function setV(id, v, d = 2) { const e = $(id); if (e && document.activeElement !== e) e.value = Number.isFinite(v) ? +v.toFixed(d) : ''; }
+function syncTransformUI() {
+  const ids = ['posX', 'posY', 'posZ', 'rotX', 'rotY', 'rotZ', 'scaX', 'scaY', 'scaZ', 'dimX', 'dimY', 'dimZ'];
+  const o = selected;
+  if (!o) { ids.forEach((i) => { const e = $(i); if (e) e.value = ''; }); updateStatusSel(); return; }
+  const p = o.position, e = new THREE.Euler().setFromQuaternion(o.quaternion, 'XYZ'), s = o.scale, ls = localSize(o);
+  setV('posX', p.x); setV('posY', p.y); setV('posZ', p.z);
+  setV('rotX', deg(e.x), 1); setV('rotY', deg(e.y), 1); setV('rotZ', deg(e.z), 1);
+  setV('scaX', s.x, 3); setV('scaY', s.y, 3); setV('scaZ', s.z, 3);
+  setV('dimX', ls[0] * Math.abs(s.x)); setV('dimY', ls[1] * Math.abs(s.y)); setV('dimZ', ls[2] * Math.abs(s.z));
+  updateStatusSel();
+}
+function applyTransformField(kind, i, v) {
+  const o = selected; if (!o || !Number.isFinite(v)) return;
+  const lock = $('lockProp')?.checked;
+  if (kind === 'sca' && v <= 0.001) return;
+  if (kind === 'dim') { const cur = localSize(o)[i] * Math.abs(o.scale.getComponent(i)); if (cur < 1e-6 || v <= 0.001) return; }
+  pushUndo();
+  if (kind === 'pos') o.position.setComponent(i, v);
+  else if (kind === 'rot') {
+    const e = new THREE.Euler().setFromQuaternion(o.quaternion, 'XYZ'); const a = [e.x, e.y, e.z]; a[i] = rad(v);
+    o.quaternion.setFromEuler(new THREE.Euler(a[0], a[1], a[2], 'XYZ'));
+  } else if (kind === 'sca') {
+    if (lock) o.scale.multiplyScalar(v / o.scale.getComponent(i)); else o.scale.setComponent(i, v);
+  } else if (kind === 'dim') {
+    const cur = localSize(o)[i] * Math.abs(o.scale.getComponent(i)), f = v / cur;
+    if (lock) o.scale.multiplyScalar(f); else o.scale.setComponent(i, o.scale.getComponent(i) * f);
+  }
+  onTransformEnd();
+}
+function onTransformEnd() { preciseBox(); syncTransformUI(); updateInfo(); updateCutRange(); updateCutPreview(); markDirty(); requestRender(); }
+function onGeometryChanged() { selected?.geometry && (selected.geometry.computeBoundingBox(), selected.geometry.computeBoundingSphere()); onTransformEnd(); }
+
+/* ---- información de la pieza ---- */
+let infoTimer = null;
+function updateInfo() { clearTimeout(infoTimer); infoTimer = setTimeout(doInfo, 120); }
+function meshVolume(o) {
+  const g = o.geometry, p = g.attributes.position, idx = g.index, m = o.matrixWorld, n = idx ? idx.count : p.count;
+  if (n > 1500000) return NaN;
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(); let vol = 0;
+  for (let i = 0; i < n; i += 3) {
+    const i0 = idx ? idx.getX(i) : i, i1 = idx ? idx.getX(i + 1) : i + 1, i2 = idx ? idx.getX(i + 2) : i + 2;
+    a.fromBufferAttribute(p, i0).applyMatrix4(m); b.fromBufferAttribute(p, i1).applyMatrix4(m); c.fromBufferAttribute(p, i2).applyMatrix4(m);
+    vol += a.dot(b.cross(c)) / 6;
+  }
+  return Math.abs(vol);
+}
+const triCount = (g) => (g.index ? g.index.count : g.attributes.position.count) / 3;
+function doInfo() {
+  const set = (id, t) => { const e = $(id); if (e) e.textContent = t; };
+  let total = 0; objects.forEach((o) => { total += triCount(o.geometry); });
+  const st = $('stScene'); if (st) st.textContent = objects.length + ' piezas · ' + Math.round(total).toLocaleString('es') + ' triángulos';
+  if (!selected) { ['mdX', 'mdY', 'mdZ', 'mdVol', 'mdTris', 'mdFit'].forEach((i) => set(i, '—')); set('sTris', '—'); return; }
+  const sz = selBox.getSize(new THREE.Vector3());
+  const t = (v) => `${fmt(v)} mm · ${fmt(v / 10, 3)} cm`;
+  set('mdX', t(sz.x)); set('mdY', t(sz.y)); set('mdZ', t(sz.z));
+  const tris = triCount(selected.geometry);
+  set('mdTris', Math.round(tris).toLocaleString('es')); set('sTris', Math.round(tris).toLocaleString('es') + ' tri.');
+  if (selected.userData.isReference) { set('mdVol', '—'); set('mdFit', '—'); return; }
+  selected.updateMatrixWorld(true);
+  const vol = meshVolume(selected);
+  set('mdVol', Number.isFinite(vol) ? `${fmt(vol / 1000, 2)} cm³ (≈ ${fmt(vol / 1000, 1)} ml)` : 'muy pesada');
+  const f = plateFits(selBox); const e = $('mdFit'); if (e) { e.textContent = f ? 'Cabe' : 'No cabe'; e.style.color = f ? 'var(--ok)' : 'var(--err)'; }
+}
+function updateStatusSel() {
+  const s = $('stSel'); if (!s) return;
+  if (!selected || selBox.isEmpty()) { s.innerHTML = 'Sin selección'; return; }
+  const z = selBox.getSize(new THREE.Vector3());
+  s.innerHTML = `<b>${selected.name}</b> · X <b>${fmt(z.x, 1)}</b> Y <b>${fmt(z.y, 1)}</b> Z <b>${fmt(z.z, 1)}</b> mm (${fmt(z.x / 10, 2)} × ${fmt(z.y / 10, 2)} × ${fmt(z.z / 10, 2)} cm)`;
+}
+
+/* ---- etiquetas 2D sobre el visor (dimensiones y reglas) ---- */
+function placeLabel(elm, wp) {
+  _v.copy(wp).project(cam);
+  if (_v.z < -1 || _v.z > 1) { elm.style.display = 'none'; return; }
+  elm.style.display = 'block';
+  elm.style.transform = `translate(-50%,-50%) translate(${(_v.x * 0.5 + 0.5) * viewport.clientWidth}px,${(-_v.y * 0.5 + 0.5) * viewport.clientHeight}px)`;
+}
+const _c3 = new THREE.Vector3(), _p3 = new THREE.Vector3();
+function updateOverlays() {
+  const show = S.showDims && selected && !selBox.isEmpty();
+  const lx = $('lblX'), ly = $('lblY'), lz = $('lblZ');
+  if (!show) { [lx, ly, lz].forEach((e) => e && (e.style.display = 'none')); }
+  else {
+    const mn = selBox.min, mx = selBox.max; selBox.getCenter(_c3);
+    const txt = (a, v) => `${a} ${fmt(v, 1)} mm · ${fmt(v / 10, 2)} cm`;
+    lx.textContent = txt('X', mx.x - mn.x); placeLabel(lx, _p3.set(_c3.x, mn.y, mx.z));
+    ly.textContent = txt('Y', mx.y - mn.y); placeLabel(ly, _p3.set(mn.x, _c3.y, mx.z));
+    lz.textContent = txt('Z', mx.z - mn.z); placeLabel(lz, _p3.set(mx.x, mn.y, _c3.z));
+  }
+  measures.forEach((m) => placeLabel(m.el, m.mid));
+}
+
+/* =====================================================================
+   8. LISTA DE ESCENA Y MATERIAL
+   ===================================================================== */
+function refreshList() {
+  const list = $('objList'); if (!list) return;
+  list.innerHTML = '';
+  $('objCount').textContent = objects.length;
+  if (!objects.length) { const d = document.createElement('div'); d.className = 'empty'; d.textContent = 'Escena vacía. Crea una forma en “Crear”.'; list.appendChild(d); }
+  objects.forEach((o) => {
+    const row = document.createElement('div');
+    row.className = 'orow' + (o === selected ? ' sel' : '') + (o.visible ? '' : ' off');
+    const vis = document.createElement('button'); vis.className = 'ib'; vis.title = 'Mostrar u ocultar'; vis.innerHTML = icon(o.visible ? 'eye' : 'eyeoff');
+    const lck = document.createElement('button'); lck.className = 'ib'; lck.title = 'Bloquear'; lck.innerHTML = icon(o.userData.locked ? 'lock' : 'unlock');
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = (o.userData.kind === 'cutter' ? '✂ ' : o.userData.isReference ? '▣ ' : '') + o.name;
+    const del = document.createElement('button'); del.className = 'ib'; del.title = 'Eliminar'; del.innerHTML = icon('trash');
+    vis.onclick = () => { pushUndo(); o.visible = !o.visible; if (!o.visible && selected === o) deselect(); refreshList(); requestRender(); markDirty(); };
+    lck.onclick = () => { pushUndo(); o.userData.locked = !o.userData.locked; if (selected === o) updateGizmo(); refreshList(); };
+    nm.onclick = () => selectObject(o);
+    nm.ondblclick = () => { const n = prompt('Nombre de la pieza', o.name); if (n && n.trim()) { pushUndo(); o.name = n.trim(); refreshList(); updateStatusSel(); } };
+    del.onclick = () => deleteObject(o);
+    row.append(vis, lck, nm, del); list.appendChild(row);
+  });
+  ['boolA', 'boolB'].forEach((id) => {
+    const sel = $(id); if (!sel) return; const prev = sel.value; sel.innerHTML = '';
+    exportables(false).forEach((o) => { const op = document.createElement('option'); op.value = o.uuid; op.textContent = o.name; sel.appendChild(op); });
+    if ([...sel.options].some((x) => x.value === prev)) sel.value = prev;
+  });
+  doInfo();
+}
+function deleteObject(o) {
+  if (!o) return; pushUndo();
+  scene.remove(o); const i = objects.indexOf(o); if (i >= 0) objects.splice(i, 1);
+  if (selected === o) deselect();
+  refreshList(); markDirty(); requestRender();
+}
+function duplicateSelected() {
+  const o = selected; if (!o) return toast('Selecciona una pieza primero', { type: 'warn' });
+  pushUndo();
+  const c = new THREE.Mesh(o.geometry, o.material.clone());          // comparte la malla: no gasta RAM extra
+  c.position.copy(o.position); c.quaternion.copy(o.quaternion); c.scale.copy(o.scale);
+  c.userData = Object.assign({}, o.userData, { locked: false });
+  c.name = uniqueName(o.name.replace(/_\d+$/, '') + '_copia');
+  c.position.x += (selBox.isEmpty() ? 10 : selBox.getSize(new THREE.Vector3()).x) * 1.1 + 2;
+  addObject(c);
+}
+function useMat(fn) { const o = selected; if (!o?.material) return; fn(o.material); o.material.needsUpdate = true; requestRender(); markDirty(); }
+const MAT_PRESETS = [
+  ['Resina gris', '#9aa0a8', 0, 0.6], ['Cera verde', '#4fae6a', 0, 0.5], ['Rojo auto', '#b3122a', 0.6, 0.25], ['Cromo', '#d0d4da', 1, 0.15],
+  ['Oro', '#d9b45c', 1, 0.3], ['Negro', '#202226', 0, 0.4], ['Azul', '#2b6cff', 0.4, 0.3], ['Blanco', '#f2f2f2', 0, 0.5],
+];
+function syncMaterialUI() {
+  const m = selected?.material; if (!m) return;
+  $('matColor').value = '#' + m.color.getHexString();
+  if ('metalness' in m) { $('matMetal').value = m.metalness; $('matRough').value = m.roughness; }
+  $('matOpacity').value = m.transparent ? m.opacity : 1;
+  $('matFlat').checked = !!m.flatShading; $('matWire').checked = !!m.wireframe;
+  $('vMetal').textContent = fmt(+$('matMetal').value, 2); $('vRough').textContent = fmt(+$('matRough').value, 2); $('vOpac').textContent = fmt(+$('matOpacity').value, 2);
+}
+/* =====================================================================
+   9. PUNTERO, HERRAMIENTAS Y PESTAÑAS
+   ===================================================================== */
+const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
+function setMouse(e) {
+  const r = el.getBoundingClientRect();
+  mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  raycaster.setFromCamera(mouse, cam);
+}
+function pickObjects(e) {
+  setMouse(e);
+  return raycaster.intersectObjects(objects.filter((o) => o.visible && !o.userData.locked && !o.userData.isReference), false)[0] || null;
+}
+const HINTS = {
+  select: 'Seleccionar: toca una pieza. Arrastra en el vacío para girar la cámara.',
+  move: 'Mover: toca una pieza y arrastra las flechas. Doble clic centra la cámara.',
+  rotate: 'Rotar: toca una pieza y arrastra los aros.',
+  scale: 'Escalar: arrastra los cubos del gizmo, o escribe el tamaño exacto en el panel Objeto.',
+  measure: 'Regla: toca dos puntos de la pieza. Esc para salir.',
+  sculpt: 'Pincel: arrastra sobre la pieza (Alt hunde). Shift + arrastrar mueve la cámara.',
+  cut: 'Corte: ajusta el plano en el panel Malla y pulsa “Aplicar corte”.',
+};
+function setTab(n) {
+  activeTab = n;
+  document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.arg === n));
+  document.querySelectorAll('.tabpane').forEach((p) => p.classList.toggle('active', p.id === 'pane-' + n));
+  if (n === 'mesh') updateCutRange();
+  updateCutPreview();
+}
+function setTool(t) {
+  if (sculpt.stroke) return;
+  S.tool = t;
+  document.querySelectorAll('.tool').forEach((b) => b.classList.toggle('active', b.dataset.arg === t));
+  brushRing.visible = false; el.style.cursor = t === 'sculpt' || t === 'measure' ? 'crosshair' : '';
+  if (t === 'measure') setTab('measure');
+  if (t === 'sculpt') { setTab('sculpt'); checkSculptable(); }
+  if (t === 'cut') setTab('mesh');
+  if (t !== 'measure') cancelPending();
+  setHint(HINTS[t] || ''); updateGizmo(); updateCutPreview();
+}
+
+const ptr = { down: false, x: 0, y: 0, moved: false, btn: 0 };
+el.addEventListener('pointerdown', (e) => {
+  ptr.down = true; ptr.x = e.clientX; ptr.y = e.clientY; ptr.moved = false; ptr.btn = e.button;
+  if (S.tool === 'sculpt' && e.button === 0 && !e.shiftKey && e.isPrimary && selected && !selected.userData.locked) {
+    if (beginStroke(e)) { e.stopImmediatePropagation(); e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (_) {} }
+  }
+}, true);
+el.addEventListener('pointermove', (e) => {
+  if (ptr.down && !ptr.moved && Math.hypot(e.clientX - ptr.x, e.clientY - ptr.y) > 5) ptr.moved = true;
+  if (sculpt.stroke) { moveStroke(e); return; }
+  if (S.tool === 'sculpt') hoverBrush(e);
+});
+function pointerEnd(e) {
+  if (sculpt.stroke) { endStroke(); ptr.down = false; return; }
+  const click = ptr.down && !ptr.moved && ptr.btn === 0 && e.type === 'pointerup';
+  ptr.down = false;
+  if (!click || transform.dragging || transform.axis) return;        // clic real: no fue arrastre ni gizmo
+  if (S.tool === 'measure') { measureClick(e); return; }
+  const hit = pickObjects(e);
+  if (S.tool === 'sculpt') { if (hit && hit.object !== selected) selectObject(hit.object); return; }
+  if (hit) selectObject(hit.object); else deselect();
+}
+el.addEventListener('pointerup', pointerEnd);
+el.addEventListener('pointercancel', pointerEnd);
+el.addEventListener('dblclick', (e) => {
+  setMouse(e);
+  const hit = raycaster.intersectObjects(objects.filter((o) => o.visible), false)[0];
+  if (hit) animateCamera(cam.position.clone().add(hit.point.clone().sub(orbit.target)), hit.point.clone());
+});
+el.addEventListener('dragover', (e) => e.preventDefault());
+el.addEventListener('drop', (e) => { e.preventDefault(); [...(e.dataTransfer?.files || [])].forEach(importFile); });
+
+/* =====================================================================
+   10. REGLA (mm y cm)
+   ===================================================================== */
+const measures = [], measure = { pending: null, pm: null };
+const markerGeo = new THREE.SphereGeometry(1, 12, 8), markerMat = new THREE.MeshBasicMaterial({ color: 0xffd166, depthTest: false });
+function addMarker(p) { const m = new THREE.Mesh(markerGeo, markerMat); m.position.copy(p); m.renderOrder = 999; scene.add(m); markerList.push(m); return m; }
+function removeMarker(m) { scene.remove(m); const i = markerList.indexOf(m); if (i >= 0) markerList.splice(i, 1); }
+function cancelPending() { if (measure.pm) { removeMarker(measure.pm); measure.pm = null; } measure.pending = null; }
+function measurePick(e) {
+  setMouse(e);
+  const t = objects.filter((o) => o.visible && !o.userData.isReference && o.userData.kind !== 'cutter');
+  if (guideMesh?.visible) t.push(guideMesh);
+  return raycaster.intersectObjects(t, false)[0] || null;
+}
+function snapVertex(hit) {
+  const g = hit.object.geometry.attributes.position, f = hit.face; let best = null, bd = Infinity;
+  for (const idx of [f.a, f.b, f.c]) {
+    const v = new THREE.Vector3().fromBufferAttribute(g, idx).applyMatrix4(hit.object.matrixWorld), d = v.distanceTo(hit.point);
+    if (d < bd) { bd = d; best = v; }
+  }
+  return best && bd < pxScale(hit.point) * 14 ? best : hit.point.clone();
+}
+function measureClick(e) {
+  const hit = measurePick(e); if (!hit) return;
+  const p = $('mSnap').checked ? snapVertex(hit) : hit.point.clone();
+  if (!measure.pending) { measure.pending = p; measure.pm = addMarker(p); setHint('Punto 1 fijado. Toca el segundo punto.'); }
+  else { createMeasure(measure.pending, p, measure.pm); measure.pending = null; measure.pm = null; setHint(HINTS.measure); }
+  requestRender();
+}
+function createMeasure(a, b, ma) {
+  const mb = addMarker(b);
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([a, b]), new THREE.LineBasicMaterial({ color: 0xffd166, depthTest: false }));
+  line.renderOrder = 998; scene.add(line);
+  const d = a.distanceTo(b), div = document.createElement('div'); div.className = 'dl ml';
+  div.innerHTML = `<b>${fmt(d)} mm</b> · ${fmt(d / 10, 3)} cm<small>ΔX ${fmt(Math.abs(b.x - a.x))} · ΔY ${fmt(Math.abs(b.y - a.y))} · ΔZ ${fmt(Math.abs(b.z - a.z))}</small>`;
+  const m = { a, b, ma, mb, line, el: div, mid: a.clone().add(b).multiplyScalar(0.5) };
+  const x = document.createElement('button'); x.textContent = '✕'; x.title = 'Borrar esta medida'; x.onclick = () => removeMeasure(m);
+  div.firstChild.after(x); $('labels').appendChild(div); measures.push(m);
+}
+function removeMeasure(m) {
+  removeMarker(m.ma); removeMarker(m.mb); scene.remove(m.line); m.line.geometry.dispose(); m.el.remove();
+  const i = measures.indexOf(m); if (i >= 0) measures.splice(i, 1); requestRender();
+}
+function clearMeasures() { cancelPending(); measures.slice().forEach(removeMeasure); }
+
+/* =====================================================================
+   11. ESCULTURA CONTROLADA
+   Diferencias con la versión anterior: pincel por normal PROMEDIO (no una sola cara),
+   caída suave, separación entre toques, 6 tipos de pincel, simetría, anillo guía,
+   y UN solo clon de geometría por trazo (no por movimiento).
+   ===================================================================== */
+const sculpt = { mode: 'draw', stroke: null };
+const adjCache = new WeakMap();
+const brushRing = new THREE.Mesh(new THREE.RingGeometry(0.94, 1, 64),
+  new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthTest: false }));
+brushRing.visible = false; brushRing.renderOrder = 1000; scene.add(brushRing);
+const sc = () => ({ r: clamp(num('sRadius', 8), 0.5, 200), k: clamp(num('sStrength', 35), 1, 100) / 100, sym: $('sSym').checked, sink: $('sSink').checked, fall: $('sFalloff').value });
+function falloffFn(t, type) { return type === 'linear' ? t : type === 'firm' ? Math.sqrt(t) : t * t * (3 - 2 * t); }
+
+function weldedCopy(g, tol = 1e-4) {
+  let ng = g.clone();
+  Object.keys(ng.attributes).forEach((k) => { if (k !== 'position') ng.deleteAttribute(k); });
+  ng = mergeVertices(ng, tol); ng.computeVertexNormals(); ng.userData = { welded: true };
+  ng.computeBoundingBox(); ng.computeBoundingSphere(); return ng;
+}
+function getAdjacency(g) {
+  let a = adjCache.get(g); if (a) return a;
+  const n = g.attributes.position.count, I = g.index.array; a = new Array(n);
+  for (let i = 0; i < n; i++) a[i] = [];
+  for (let i = 0; i < I.length; i += 3) {
+    const p = I[i], q = I[i + 1], r = I[i + 2];
+    a[p].push(q, r); a[q].push(p, r); a[r].push(p, q);
+  }
+  adjCache.set(g, a); return a;
+}
+function checkSculptable() {
+  if (!selected) return toast('Selecciona una pieza para esculpir', { type: 'warn' });
+  const t = triCount(selected.geometry);
+  if (t < 2000) toast('Esta pieza tiene pocos triángulos: usa Subdividir (panel Esculpir) o crea la forma con detalle alto.', { type: 'warn', ms: 6000 });
+  else if (t > 150000) toast('Malla muy densa: el pincel puede ir lento. Considera simplificarla.', { type: 'warn', ms: 6000 });
+}
+function prepareSculptGeometry(o) {                 // deja la pieza soldada, con escala 1 y lista para editar
+  const g = o.geometry, s = o.scale, bake = Math.abs(s.x - 1) > 1e-6 || Math.abs(s.y - 1) > 1e-6 || Math.abs(s.z - 1) > 1e-6;
+  let ng;
+  if (!g.userData.welded) {
+    ng = g.clone(); Object.keys(ng.attributes).forEach((k) => { if (k !== 'position') ng.deleteAttribute(k); });
+    if (bake) ng.scale(s.x, s.y, s.z);
+    ng = mergeVertices(ng, 1e-4); ng.computeVertexNormals(); ng.userData = { welded: true };
+  } else {
+    ng = g.clone(); if (bake) ng.scale(s.x, s.y, s.z);
+    const adj = adjCache.get(g); if (adj) adjCache.set(ng, adj);
+  }
+  if (bake) o.scale.set(1, 1, 1);
+  ng.computeBoundingBox(); ng.computeBoundingSphere(); o.geometry = ng;
+}
+function beginStroke(e) {
+  const o = selected;
+  if (!o || o.userData.isReference || o.userData.kind === 'cutter' || !o.visible) return false;
+  setMouse(e); const hit = raycaster.intersectObject(o, false)[0]; if (!hit) return false;
+  if (triCount(o.geometry) > 400000) { toast('La pieza tiene demasiados triángulos para esculpir. Simplifícala en el panel Malla.', { type: 'warn' }); return false; }
+  pushUndo(); prepareSculptGeometry(o);
+  const cfg = sc(), st = { o, geo: o.geometry, last: hit.point.clone(), mode: sculpt.mode, sink: cfg.sink || e.altKey, grab: null };
+  sculpt.stroke = st; orbit.enabled = false;
+  if (st.mode === 'grab') initGrab(st, hit.point); else { dab(hit.point); finishDab(); }
+  return true;
+}
+function initGrab(st, pw) {
+  const o = st.o, P = st.geo.attributes.position.array, c = o.worldToLocal(pw.clone()), cfg = sc(), r2 = cfg.r * cfg.r, ids = [], ws = [];
+  for (let i = 0; i < P.length / 3; i++) {
+    const dx = P[3 * i] - c.x, dy = P[3 * i + 1] - c.y, dz = P[3 * i + 2] - c.z, d2 = dx * dx + dy * dy + dz * dz;
+    if (d2 < r2) { ids.push(i); ws.push(falloffFn(1 - Math.sqrt(d2) / cfg.r, cfg.fall)); }
+  }
+  const orig = new Float32Array(ids.length * 3);
+  ids.forEach((id, k) => { orig[3 * k] = P[3 * id]; orig[3 * k + 1] = P[3 * id + 1]; orig[3 * k + 2] = P[3 * id + 2]; });
+  st.grab = { ids, ws, orig, startW: pw.clone(), plane: new THREE.Plane().setFromNormalAndCoplanarPoint(cam.getWorldDirection(new THREE.Vector3()).negate(), pw) };
+}
+function dab(pw) {
+  const st = sculpt.stroke, cfg = sc(), c = st.o.worldToLocal(pw.clone());
+  applyBrush(st.geo, c, cfg, st.mode, st.sink);
+  if (cfg.sym && st.mode !== 'grab') { const m = c.clone(); m.x = -m.x; applyBrush(st.geo, m, cfg, st.mode, st.sink); }
+}
+function applyBrush(g, c, cfg, mode, sink) {
+  const P = g.attributes.position.array, N = g.attributes.normal.array, n = P.length / 3, r = cfg.r, r2 = r * r, sf = cfg.k, sgn = sink ? -1 : 1;
+  const ids = [], ws = []; let ax = 0, ay = 0, az = 0, cx = 0, cy = 0, cz = 0, wsum = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = P[3 * i] - c.x, dy = P[3 * i + 1] - c.y, dz = P[3 * i + 2] - c.z, d2 = dx * dx + dy * dy + dz * dz;
+    if (d2 >= r2) continue;
+    const w = falloffFn(1 - Math.sqrt(d2) / r, cfg.fall);
+    ids.push(i); ws.push(w); wsum += w;
+    ax += N[3 * i] * w; ay += N[3 * i + 1] * w; az += N[3 * i + 2] * w; cx += P[3 * i] * w; cy += P[3 * i + 1] * w; cz += P[3 * i + 2] * w;
+  }
+  if (!ids.length || wsum <= 0) return;
+  const nl = Math.hypot(ax, ay, az) || 1; ax /= nl; ay /= nl; az /= nl; cx /= wsum; cy /= wsum; cz /= wsum;
+  const amt = r * 0.07 * sf * sgn;
+  if (mode === 'draw') ids.forEach((i, k) => { const w = ws[k] * amt; P[3 * i] += ax * w; P[3 * i + 1] += ay * w; P[3 * i + 2] += az * w; });
+  else if (mode === 'inflate') ids.forEach((i, k) => { const w = ws[k] * amt; P[3 * i] += N[3 * i] * w; P[3 * i + 1] += N[3 * i + 1] * w; P[3 * i + 2] += N[3 * i + 2] * w; });
+  else if (mode === 'flatten') ids.forEach((i, k) => {
+    const d = (P[3 * i] - cx) * ax + (P[3 * i + 1] - cy) * ay + (P[3 * i + 2] - cz) * az, f = Math.min(1, ws[k] * sf * 0.6);
+    P[3 * i] -= ax * d * f; P[3 * i + 1] -= ay * d * f; P[3 * i + 2] -= az * d * f;
+  });
+  else if (mode === 'pinch') ids.forEach((i, k) => {
+    let dx = c.x - P[3 * i], dy = c.y - P[3 * i + 1], dz = c.z - P[3 * i + 2];
+    const dn = dx * ax + dy * ay + dz * az; dx -= ax * dn; dy -= ay * dn; dz -= az * dn;
+    const f = ws[k] * sf * 0.12 * sgn; P[3 * i] += dx * f; P[3 * i + 1] += dy * f; P[3 * i + 2] += dz * f;
+  });
+  else if (mode === 'smooth') {
+    const nb = getAdjacency(g), tmp = new Float32Array(ids.length * 3);
+    ids.forEach((id, k) => {
+      const l = nb[id];
+      if (!l.length) { tmp[3 * k] = P[3 * id]; tmp[3 * k + 1] = P[3 * id + 1]; tmp[3 * k + 2] = P[3 * id + 2]; return; }
+      let sx = 0, sy = 0, sz = 0; for (const j of l) { sx += P[3 * j]; sy += P[3 * j + 1]; sz += P[3 * j + 2]; }
+      const inv = 1 / l.length, f = Math.min(1, ws[k] * sf * 0.8);
+      tmp[3 * k] = P[3 * id] + (sx * inv - P[3 * id]) * f; tmp[3 * k + 1] = P[3 * id + 1] + (sy * inv - P[3 * id + 1]) * f; tmp[3 * k + 2] = P[3 * id + 2] + (sz * inv - P[3 * id + 2]) * f;
+    });
+    ids.forEach((id, k) => { P[3 * id] = tmp[3 * k]; P[3 * id + 1] = tmp[3 * k + 1]; P[3 * id + 2] = tmp[3 * k + 2]; });
+  }
+}
+function finishDab() {
+  const g = sculpt.stroke.geo; g.attributes.position.needsUpdate = true;
+  g.computeVertexNormals(); g.computeBoundingSphere(); g.computeBoundingBox(); requestRender();
+}
+function moveStroke(e) {
+  const st = sculpt.stroke; setMouse(e);
+  if (st.mode === 'grab') {
+    const p = new THREE.Vector3(); if (!raycaster.ray.intersectPlane(st.grab.plane, p)) return;
+    const dl = st.o.worldToLocal(p.clone()).sub(st.o.worldToLocal(st.grab.startW.clone())), P = st.geo.attributes.position.array, gr = st.grab;
+    gr.ids.forEach((id, k) => { const w = gr.ws[k]; P[3 * id] = gr.orig[3 * k] + dl.x * w; P[3 * id + 1] = gr.orig[3 * k + 1] + dl.y * w; P[3 * id + 2] = gr.orig[3 * k + 2] + dl.z * w; });
+    finishDab(); return;
+  }
+  const hit = raycaster.intersectObject(st.o, false)[0]; if (!hit) return;
+  const cur = hit.point, seg = cur.distanceTo(st.last), spacing = Math.max(0.4, sc().r * 0.2);
+  moveRing(hit);
+  if (seg < spacing) return;
+  const steps = Math.min(5, Math.max(1, Math.floor(seg / spacing)));
+  for (let i = 1; i <= steps; i++) dab(st.last.clone().lerp(cur, i / steps));
+  st.last.copy(cur); finishDab();
+}
+function endStroke() {
+  const st = sculpt.stroke; sculpt.stroke = null; orbit.enabled = true;
+  if (st) { st.geo.computeBoundingBox(); st.geo.computeBoundingSphere(); onTransformEnd(); }
+}
+function moveRing(hit) {
+  const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+  brushRing.position.copy(hit.point).addScaledVector(n, 0.05); brushRing.quaternion.setFromUnitVectors(_Z, n);
+  brushRing.scale.setScalar(sc().r); brushRing.visible = true; requestRender();
+}
+let lastHover = 0;
+function hoverBrush(e) {
+  const now = performance.now(); if (now - lastHover < 30) return; lastHover = now;
+  if (!selected || selected.userData.isReference || selected.userData.kind === 'cutter') { brushRing.visible = false; return; }
+  setMouse(e); const hit = raycaster.intersectObject(selected, false)[0];
+  if (!hit) { if (brushRing.visible) { brushRing.visible = false; requestRender(); } return; }
+  moveRing(hit);
+}
+
+/* =====================================================================
+   12. OPERACIONES DE MALLA (sin bloquear el navegador con mallas grandes)
+   ===================================================================== */
+function worldGeometry(o) {
+  o.updateMatrixWorld(true);
+  const g = o.geometry.clone(); Object.keys(g.attributes).forEach((k) => { if (k !== 'position') g.deleteAttribute(k); });
+  g.applyMatrix4(o.matrixWorld); return g;
+}
+const nonIdx = (g) => (g.index ? g.toNonIndexed() : g);
+function flipWinding(g) {
+  if (g.index) { const I = g.index.array; for (let i = 0; i < I.length; i += 3) { const t = I[i + 1]; I[i + 1] = I[i + 2]; I[i + 2] = t; } g.index.needsUpdate = true; }
+  else { const P = g.attributes.position.array; for (let i = 0; i < P.length; i += 9) for (let k = 0; k < 3; k++) { const t = P[i + 3 + k]; P[i + 3 + k] = P[i + 6 + k]; P[i + 6 + k] = t; } }
+}
+function needMesh() { if (!selected || selected.userData.isReference) { toast('Selecciona una pieza primero', { type: 'warn' }); return null; } return selected; }
+function replaceGeometry(o, ng) { pushUndo(); o.geometry = ng; onGeometryChanged(); }
+
+function subdivideGeometry(g) {
+  const src = nonIdx(g), P = src.attributes.position.array, n = P.length / 9, out = new Float32Array(n * 36);
+  let o = 0;
+  for (let i = 0; i < n; i++) {
+    const b = i * 9, ax = P[b], ay = P[b + 1], az = P[b + 2], bx = P[b + 3], by = P[b + 4], bz = P[b + 5], cx = P[b + 6], cy = P[b + 7], cz = P[b + 8];
+    const abx = (ax + bx) / 2, aby = (ay + by) / 2, abz = (az + bz) / 2, bcx = (bx + cx) / 2, bcy = (by + cy) / 2, bcz = (bz + cz) / 2, cax = (cx + ax) / 2, cay = (cy + ay) / 2, caz = (cz + az) / 2;
+    const T = [ax, ay, az, abx, aby, abz, cax, cay, caz, abx, aby, abz, bx, by, bz, bcx, bcy, bcz, cax, cay, caz, bcx, bcy, bcz, cx, cy, cz, abx, aby, abz, bcx, bcy, bcz, cax, cay, caz];
+    for (let k = 0; k < 36; k++) out[o++] = T[k];
+  }
+  let ng = new THREE.BufferGeometry(); ng.setAttribute('position', new THREE.BufferAttribute(out, 3));
+  ng = mergeVertices(ng, 1e-4); ng.computeVertexNormals(); ng.userData = { welded: true }; return ng;
+}
+async function subdivideSelected() {
+  const o = needMesh(); if (!o) return;
+  const t = triCount(o.geometry);
+  if (t * 4 > 300000) return toast(`Subdividir daría ${Math.round(t * 4).toLocaleString('es')} triángulos (máximo 300 000 en este equipo).`, { type: 'warn' });
+  busy(true, 'Subdividiendo…'); await tick();
+  try { replaceGeometry(o, subdivideGeometry(o.geometry)); toast('Malla subdividida', { type: 'ok' }); } catch (err) { showError('No se pudo subdividir: ' + err.message); } finally { busy(false); }
+}
+function weldSelected() { const o = needMesh(); if (!o) return; replaceGeometry(o, weldedCopy(o.geometry, Math.max(1e-6, num('weldTol', 0.01)))); toast('Vértices soldados', { type: 'ok' }); }
+function flipSelected() { const o = needMesh(); if (!o) return; const g = o.geometry.clone(); flipWinding(g); g.computeVertexNormals(); g.userData = Object.assign({}, g.userData); replaceGeometry(o, g); }
+function bakeScaleSelected() {
+  const o = needMesh(); if (!o) return; const s = o.scale;
+  if (Math.abs(s.x - 1) < 1e-6 && Math.abs(s.y - 1) < 1e-6 && Math.abs(s.z - 1) < 1e-6) return toast('La escala ya es 1', { type: 'warn' });
+  const g = o.geometry.clone(); g.scale(s.x, s.y, s.z); pushUndo(); o.geometry = g; o.scale.set(1, 1, 1); onGeometryChanged();
+}
+async function smoothSelected() {
+  const o = needMesh(); if (!o) return;
+  busy(true, 'Suavizando…'); await tick();
+  try {
+    const g = o.geometry.userData.welded ? o.geometry.clone() : weldedCopy(o.geometry); g.userData = { welded: true };
+    const nb = getAdjacency(g), P = g.attributes.position.array, n = P.length / 3, tmp = new Float32Array(P.length);
+    const pass = (lam) => {
+      for (let i = 0; i < n; i++) {
+        const l = nb[i]; if (!l.length) { tmp[3 * i] = P[3 * i]; tmp[3 * i + 1] = P[3 * i + 1]; tmp[3 * i + 2] = P[3 * i + 2]; continue; }
+        let sx = 0, sy = 0, sz = 0; for (const j of l) { sx += P[3 * j]; sy += P[3 * j + 1]; sz += P[3 * j + 2]; }
+        const inv = 1 / l.length; tmp[3 * i] = P[3 * i] + lam * (sx * inv - P[3 * i]); tmp[3 * i + 1] = P[3 * i + 1] + lam * (sy * inv - P[3 * i + 1]); tmp[3 * i + 2] = P[3 * i + 2] + lam * (sz * inv - P[3 * i + 2]);
+      }
+      P.set(tmp);
+    };
+    for (let it = 0; it < clamp(Math.round(num('smoothIter', 3)), 1, 30); it++) { pass(0.5); pass(-0.53); }   // suavizado sin encoger la pieza
+    g.attributes.position.needsUpdate = true; g.computeVertexNormals(); replaceGeometry(o, g); toast('Superficie suavizada', { type: 'ok' });
+  } catch (err) { showError('No se pudo suavizar: ' + err.message); } finally { busy(false); }
+}
+async function simplifySelected() {
+  const o = needMesh(); if (!o) return; const cell = Math.max(0.02, num('simpCell', 0.5));
+  busy(true, 'Simplificando…'); await tick();
+  try {
+    const src = nonIdx(o.geometry), P = src.attributes.position.array, nv0 = P.length / 3, map = new Map(), sums = [], remap = new Uint32Array(nv0);
+    for (let i = 0; i < nv0; i++) {
+      const key = Math.round(P[3 * i] / cell) + ',' + Math.round(P[3 * i + 1] / cell) + ',' + Math.round(P[3 * i + 2] / cell);
+      let id = map.get(key); if (id === undefined) { id = sums.length / 4; map.set(key, id); sums.push(0, 0, 0, 0); }
+      const b = id * 4; sums[b] += P[3 * i]; sums[b + 1] += P[3 * i + 1]; sums[b + 2] += P[3 * i + 2]; sums[b + 3]++; remap[i] = id;
+    }
+    const nv = sums.length / 4, pos = new Float32Array(nv * 3);
+    for (let i = 0; i < nv; i++) { pos[3 * i] = sums[4 * i] / sums[4 * i + 3]; pos[3 * i + 1] = sums[4 * i + 1] / sums[4 * i + 3]; pos[3 * i + 2] = sums[4 * i + 2] / sums[4 * i + 3]; }
+    const idx = []; for (let i = 0; i < remap.length; i += 3) { const a = remap[i], b = remap[i + 1], c = remap[i + 2]; if (a !== b && b !== c && a !== c) idx.push(a, b, c); }
+    if (idx.length < 12) return toast('La celda es demasiado grande: la pieza desaparecería. Usa un valor menor.', { type: 'warn' });
+    const before = triCount(o.geometry), ng = new THREE.BufferGeometry();
+    ng.setAttribute('position', new THREE.BufferAttribute(pos, 3)); ng.setIndex(idx); ng.computeVertexNormals(); ng.userData = { welded: true };
+    replaceGeometry(o, ng); toast(`Triángulos: ${Math.round(before).toLocaleString('es')} → ${Math.round(idx.length / 3).toLocaleString('es')}`, { type: 'ok' });
+  } catch (err) { showError('No se pudo simplificar: ' + err.message); } finally { busy(false); }
+}
+
+/* ---- colocar, espejo, patrones ---- */
+function floorSel() { if (!selected) return; pushUndo(); dropToFloor(selected); onTransformEnd(); }
+function centerOrigin() { if (!selected) return; pushUndo(); preciseBox(); const c = selBox.getCenter(new THREE.Vector3()); selected.position.x -= c.x; selected.position.z -= c.z; onTransformEnd(); }
+function centerPivot() {
+  const o = needMesh(); if (!o) return;
+  const g = o.geometry.clone(); g.computeBoundingBox(); const c = g.boundingBox.getCenter(new THREE.Vector3()); g.translate(-c.x, -c.y, -c.z);
+  const w = c.clone().multiply(o.scale).applyQuaternion(o.quaternion); pushUndo(); o.position.add(w); o.geometry = g; onGeometryChanged();
+}
+function resetRot() { if (!selected) return; pushUndo(); selected.quaternion.identity(); onTransformEnd(); }
+function copyMat(from, to) { to.material.metalness = from.material.metalness; to.material.roughness = from.material.roughness; }
+function mirrorSelected(ax) {
+  const o = needMesh(); if (!o) return;
+  const g = worldGeometry(o); g.scale(ax === 'x' ? -1 : 1, ax === 'y' ? -1 : 1, ax === 'z' ? -1 : 1); flipWinding(g); g.computeVertexNormals();
+  pushUndo(); const m = makeMesh(g, o.name + '_espejo', o.material.color.getHex()); copyMat(o, m); addObject(m);
+}
+function cloneShared(o) {
+  const c = new THREE.Mesh(o.geometry, o.material.clone()); c.position.copy(o.position); c.quaternion.copy(o.quaternion); c.scale.copy(o.scale);
+  c.userData = Object.assign({}, o.userData, { locked: false }); c.name = uniqueName(o.name.replace(/_\d+$/, '') + '_copia'); return c;
+}
+function arrayLinear() {
+  const o = needMesh(); if (!o) return; const n = clamp(Math.round(num('arrN', 3)), 2, 60), d = new THREE.Vector3(num('arrDX'), num('arrDY'), num('arrDZ'));
+  pushUndo(); for (let i = 1; i < n; i++) { const c = cloneShared(o); c.position.addScaledVector(d, i); scene.add(c); objects.push(c); }
+  refreshList(); markDirty(); requestRender(); toast(`${n - 1} copias creadas`, { type: 'ok' });
+}
+function arrayCircular() {
+  const o = needMesh(); if (!o) return; const n = clamp(Math.round(num('arrCN', 6)), 2, 60), Y = new THREE.Vector3(0, 1, 0);
+  pushUndo(); for (let i = 1; i < n; i++) { const a = (2 * Math.PI * i) / n, c = cloneShared(o); c.position.applyAxisAngle(Y, a); c.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(Y, a)); scene.add(c); objects.push(c); }
+  refreshList(); markDirty(); requestRender(); toast(`${n - 1} copias creadas alrededor del eje Y`, { type: 'ok' });
+}
+
+/* =====================================================================
+   13. CORTE (plano, caja de corte) Y BOOLEANAS
+   ===================================================================== */
+const AXI = { x: 0, y: 1, z: 2 };
+let csgLib = null, csgPromise = null;
+function needCSG() {
+  if (csgLib) return Promise.resolve(csgLib);
+  if (!csgPromise) csgPromise = import('https://esm.sh/three-bvh-csg@0.0.17?external=three').then((m) => (csgLib = m))
+    .catch((err) => { csgPromise = null; showError('No se pudo cargar el motor de booleanas (requiere internet): ' + err.message); return null; });
+  return csgPromise;
+}
+function prepCSG(g) {
+  let p = g.clone(); Object.keys(p.attributes).forEach((k) => { if (k !== 'position') p.deleteAttribute(k); });
+  p = mergeVertices(p, 1e-4); p.computeVertexNormals(); return p;
+}
+function csgOp(csg, ga, gb, opName) {
+  const A = new csg.Brush(prepCSG(ga)), B = new csg.Brush(prepCSG(gb)); A.updateMatrixWorld(true); B.updateMatrixWorld(true);
+  const ev = new csg.Evaluator(); ev.attributes = ['position', 'normal']; ev.useGroups = false;
+  const g = ev.evaluate(A, B, csg[opName]).geometry; g.computeBoundingBox(); g.computeBoundingSphere(); return g;
+}
+function csgHalfSpace(csg, g0, ai, c, sd) {
+  g0.computeBoundingBox(); const size = g0.boundingBox.getSize(new THREE.Vector3()), L = Math.max(size.x, size.y, size.z) * 4 + 100;
+  const ctr = g0.boundingBox.getCenter(new THREE.Vector3()); ctr.setComponent(ai, c + (sd === 'neg' ? 1 : -1) * L / 2);
+  const cg = new THREE.BoxGeometry(L, L, L); cg.translate(ctr.x, ctr.y, ctr.z);
+  return csgOp(csg, g0, cg, 'SUBTRACTION');
+}
+function clipGeometry(g, ai, c, keepNeg) {          // corte simple, sin tapa: funciona con cualquier malla
+  const P = nonIdx(g).attributes.position.array, out = [];
+  const dist = (p) => (keepNeg ? c - p[ai] : p[ai] - c);
+  for (let i = 0; i < P.length; i += 9) {
+    const v = [[P[i], P[i + 1], P[i + 2]], [P[i + 3], P[i + 4], P[i + 5]], [P[i + 6], P[i + 7], P[i + 8]]], d = v.map(dist), poly = [];
+    for (let k = 0; k < 3; k++) {
+      const a = v[k], b = v[(k + 1) % 3], da = d[k], db = d[(k + 1) % 3];
+      if (da >= 0) poly.push(a);
+      if ((da >= 0) !== (db >= 0)) { const t = da / (da - db); poly.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]); }
+    }
+    for (let k = 1; k < poly.length - 1; k++) out.push(...poly[0], ...poly[k], ...poly[k + 1]);
+  }
+  const ng = new THREE.BufferGeometry(); ng.setAttribute('position', new THREE.Float32BufferAttribute(out, 3)); ng.computeVertexNormals(); return ng;
+}
+function replaceWith(o, geos, suffix) {              // sustituye la pieza o por una o más piezas nuevas (ya en coordenadas del mundo)
+  const color = o.material.color.getHex(), base = o.name; let last = null;
+  scene.remove(o); objects.splice(objects.indexOf(o), 1);
+  geos.forEach((g) => { const m = makeMesh(g, base.replace(/_\d+$/, '') + suffix, color); copyMat(o, m); scene.add(m); objects.push(m); last = m; });
+  refreshList(); selectObject(last); markDirty();
+}
+async function doCut(o, axis, c, side, cap) {
+  if (!o || o.userData.isReference || o.userData.kind === 'cutter') return toast('Selecciona la pieza que quieres cortar', { type: 'warn' });
+  const ai = AXI[axis]; busy(true, 'Cortando…'); await tick();
+  try {
+    const g0 = worldGeometry(o), results = [];
+    for (const sd of side === 'both' ? ['neg', 'pos'] : [side]) {
+      let geo;
+      if (cap) { const csg = await needCSG(); if (!csg) return; geo = csgHalfSpace(csg, g0, ai, c, sd); } else geo = clipGeometry(g0, ai, c, sd === 'neg');
+      if (geo && geo.attributes.position.count > 0) results.push(geo);
+    }
+    if (!results.length) return toast('Ese lado del corte no tiene material', { type: 'warn' });
+    pushUndo(); replaceWith(o, results, '_corte');
+    toast(results.length > 1 ? 'Pieza dividida en dos' : 'Corte aplicado', { type: 'ok' });
+  } catch (err) { showError('No se pudo cortar: ' + err.message + '. Prueba sin “Tapar el corte”.'); } finally { busy(false); }
+}
+function addCutter() {
+  const base = selected && !selected.userData.isReference && !selBox.isEmpty();
+  const s = base ? Math.max(...selBox.getSize(new THREE.Vector3()).toArray()) * 0.4 : 20;
+  pushUndo();
+  const m = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), new THREE.MeshStandardMaterial({ color: 0xff4d6d, transparent: true, opacity: 0.4, depthWrite: false }));
+  m.name = uniqueName('Caja_de_corte'); m.userData.kind = 'cutter'; if (base) selBox.getCenter(m.position);
+  addObject(m); setTool('move'); toast('Mueve y escala la caja sobre lo que sobra; luego pulsa “Restar de la pieza”.', { ms: 5500 });
+}
+async function applyCutters() {
+  const target = selected, cutters = objects.filter((o) => o.userData.kind === 'cutter' && o.visible);
+  if (!target || target.userData.isReference || target.userData.kind === 'cutter') return toast('Selecciona la pieza a recortar (no la caja)', { type: 'warn' });
+  if (!cutters.length) return toast('Primero crea una caja de corte', { type: 'warn' });
+  busy(true, 'Recortando…'); await tick();
+  try {
+    const csg = await needCSG(); if (!csg) return;
+    let geo = worldGeometry(target); for (const c of cutters) geo = csgOp(csg, geo, worldGeometry(c), 'SUBTRACTION');
+    if (!geo.attributes.position.count) return toast('El recorte eliminó toda la pieza', { type: 'warn' });
+    pushUndo(); cutters.forEach((c) => { scene.remove(c); objects.splice(objects.indexOf(c), 1); });
+    replaceWith(target, [geo], '_recorte'); toast('Recorte aplicado', { type: 'ok' });
+  } catch (err) { showError('No se pudo recortar: ' + err.message + '. La malla debe estar cerrada; prueba “Soldar vértices” antes.'); } finally { busy(false); }
+}
+function clearCutters() { const c = objects.filter((o) => o.userData.kind === 'cutter'); if (!c.length) return; pushUndo(); c.forEach((o) => { scene.remove(o); objects.splice(objects.indexOf(o), 1); }); if (c.includes(selected)) selected = null; refreshList(); selectObject(selected); }
+async function boolOp(kind) {
+  const a = objects.find((o) => o.uuid === $('boolA').value), b = objects.find((o) => o.uuid === $('boolB').value);
+  if (!a || !b || a === b) return toast('Elige dos piezas distintas en A y B', { type: 'warn' });
+  busy(true, 'Calculando…'); await tick();
+  try {
+    let geo;
+    if (kind === 'merge') { geo = mergeGeometries([nonIdx(worldGeometry(a)), nonIdx(worldGeometry(b))]); if (!geo) throw new Error('no se pudieron combinar'); geo.computeVertexNormals(); }
+    else { const csg = await needCSG(); if (!csg) return; geo = csgOp(csg, worldGeometry(a), worldGeometry(b), { union: 'ADDITION', sub: 'SUBTRACTION', inter: 'INTERSECTION' }[kind]); }
+    if (!geo.attributes.position.count) return toast('El resultado quedó vacío', { type: 'warn' });
+    pushUndo(); scene.remove(b); objects.splice(objects.indexOf(b), 1);
+    replaceWith(a, [geo], { union: '_union', sub: '_resta', inter: '_inter', merge: '_combinada' }[kind]);
+    toast('Operación aplicada', { type: 'ok' });
+  } catch (err) { showError('No se pudo completar: ' + err.message + '. Las booleanas necesitan mallas cerradas.'); } finally { busy(false); }
+}
+
+/* ---- plano de corte (vista previa) ---- */
+const cutPlane = new THREE.Group();
+cutPlane.add(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false })),
+  new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(1, 1)), new THREE.LineBasicMaterial({ color: ACCENT })));
+cutPlane.visible = false; scene.add(cutPlane);
+function updateCutRange() {
+  const r = $('cutPos'), n = $('cutPosNum'); if (!r || !n || !selected || selBox.isEmpty()) return;
+  const i = AXI[$('cutAxis').value], mn = selBox.min.getComponent(i), mx = selBox.max.getComponent(i);
+  r.min = mn.toFixed(2); r.max = mx.toFixed(2); let v = +r.value; if (!(v >= mn && v <= mx)) v = (mn + mx) / 2;
+  r.value = v; n.value = +v.toFixed(2);
+}
+function updateCutPreview() {
+  const show = (S.tool === 'cut' || activeTab === 'mesh') && selected && !selBox.isEmpty() && !selected.userData.isReference;
+  cutPlane.visible = !!show; if (!show) { requestRender(); return; }
+  const ax = $('cutAxis').value, c = num('cutPosNum', 0), sz = selBox.getSize(new THREE.Vector3()), s = Math.max(sz.x, sz.y, sz.z) * 1.4 + 10;
+  cutPlane.scale.set(s, s, 1); cutPlane.rotation.set(0, 0, 0);
+  const ctr = selBox.getCenter(new THREE.Vector3());
+  if (ax === 'x') { cutPlane.rotation.y = Math.PI / 2; ctr.x = c; } else if (ax === 'y') { cutPlane.rotation.x = -Math.PI / 2; ctr.y = c; } else ctr.z = c;
+  cutPlane.position.copy(ctr); requestRender();
+}
+
+/* =====================================================================
+   14. TEXTO, REFERENCIAS, GUÍA, IMPORTAR Y EXPORTAR
+   ===================================================================== */
+let fontPromise = null;
+function loadFont() {
+  if (!fontPromise) fontPromise = new Promise((res, rej) => new FontLoader().load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json', res, undefined, rej));
+  return fontPromise;
+}
+async function addText() {
+  const txt = $('txtValue').value.trim(); if (!txt) return toast('Escribe un texto', { type: 'warn' });
+  busy(true, 'Creando texto…');
+  try {
+    const font = await loadFont(), size = clamp(num('txtSize', 10), 1, 200), depth = clamp(num('txtDepth', 3), 0.5, 100);
+    const g = new TextGeometry(txt, { font, size, height: depth, depth, curveSegments: 6, bevelEnabled: false }); g.center();
+    pushUndo(); const m = makeMesh(g, 'Texto', 0xc9ced6); dropToFloor(m); addObject(m); frameBox(new THREE.Box3().setFromObject(m));
+  } catch (err) { showError('No se pudo crear el texto (necesita internet para la fuente): ' + (err.message || err)); } finally { busy(false); }
+}
+function addReference(file) {
+  const url = URL.createObjectURL(file);
+  new THREE.TextureLoader().load(url, (tex) => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const w = clamp(num('refWidth', 200), 10, 2000), h = w * (tex.image.height / tex.image.width), plane = $('refPlane').value;
+    const g = new THREE.PlaneGeometry(w, h);
+    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: num('refOpacity', 0.5), side: THREE.DoubleSide, depthWrite: false }));
+    m.name = uniqueName('Referencia'); m.userData.isReference = true; m.userData.kind = 'ref'; m.renderOrder = -1;
+    if (plane === 'front') m.position.set(0, h / 2, 0);
+    else if (plane === 'side') { m.rotation.y = Math.PI / 2; m.position.set(0, h / 2, 0); }
+    else { m.rotation.x = -Math.PI / 2; m.position.set(0, 0.1, 0); }
+    pushUndo(); addObject(m); toast('Referencia agregada. Muévela y escálala con el gizmo o el panel Objeto.', { type: 'ok' });
+    URL.revokeObjectURL(url);
+  }, undefined, () => showError('No se pudo leer la imagen'));
+}
+let guideMesh = null;
+function loadGuide(file) {
+  const r = new FileReader();
+  r.onload = (e) => {
+    try {
+      const g = new STLLoader().parse(e.target.result); g.rotateX(-Math.PI / 2); g.computeBoundingBox(); const b = g.boundingBox, c = b.getCenter(new THREE.Vector3()); g.translate(-c.x, -b.min.y, -c.z);
+      clearGuide(); guideMesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x4ecdc4, transparent: true, opacity: 0.35, depthWrite: false }));
+      scene.add(guideMesh); requestRender(); toast('STL guía cargado', { type: 'ok' });
+    } catch (err) { showError('No se pudo leer el STL: ' + err.message); }
+  };
+  r.readAsArrayBuffer(file);
+}
+function clearGuide() { if (!guideMesh) return; scene.remove(guideMesh); guideMesh.geometry.dispose(); guideMesh.material.dispose(); guideMesh = null; requestRender(); }
+
+function finishImport(g, name, unit, zup) {
+  if (zup) g.rotateX(-Math.PI / 2);
+  if (unit !== 1) g.scale(unit, unit, unit);
+  g.computeBoundingBox(); const b = g.boundingBox, c = b.getCenter(new THREE.Vector3()); g.translate(-c.x, -b.min.y, -c.z);
+  const tris = triCount(g); if (tris > 300000) toast(`Modelo de ${Math.round(tris).toLocaleString('es')} triángulos: usa Simplificar en el panel Malla si va lento.`, { type: 'warn', ms: 7000 });
+  pushUndo(); const m = makeMesh(g, name.replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_').slice(0, 24) || 'Modelo', 0xc9ced6);
+  addObject(m); frameBox(new THREE.Box3().setFromObject(m));
+}
+function importRoot(root, name, unit) {
+  root.updateMatrixWorld(true); const items = [];
+  root.traverse((n) => { if (n.isMesh && n.geometry) { const g = n.geometry.clone(); g.applyMatrix4(n.matrixWorld); items.push({ g, c: n.material?.color ? n.material.color.getHex() : 0xc9ced6, n: n.name }); } });
+  if (!items.length) return toast('El archivo no contiene mallas', { type: 'warn' });
+  if (items.length > 60) { const g = mergeGeometries(items.map((i) => { const x = nonIdx(i.g); Object.keys(x.attributes).forEach((k) => { if (k !== 'position') x.deleteAttribute(k); }); return x; })); items.length = 0; items.push({ g, c: 0xc9ced6, n: name }); }
+  const box = new THREE.Box3(); items.forEach((i) => { if (unit !== 1) i.g.scale(unit, unit, unit); i.g.computeBoundingBox(); box.union(i.g.boundingBox); });
+  const c = box.getCenter(new THREE.Vector3()); pushUndo();
+  items.forEach((i, k) => { i.g.translate(-c.x, -box.min.y, -c.z); const m = makeMesh(i.g, (i.n || name).replace(/\.[^.]+$/, '').slice(0, 24) || 'Pieza', i.c); scene.add(m); objects.push(m); if (k === items.length - 1) selectObject(m); });
+  refreshList(); markDirty(); frameAll();
+}
+async function importFile(file) {
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase(), unit = num('impUnit', 1) || 1, zup = $('impZup').checked;
+  busy(true, 'Importando…'); await tick();
+  try {
+    if (ext === 'yc3d' || ext === 'json') loadProjectText(await file.text());
+    else if (ext === 'stl') finishImport(new STLLoader().parse(await file.arrayBuffer()), file.name, unit, zup);
+    else if (ext === 'obj') importRoot(new OBJLoader().parse(await file.text()), file.name, unit);
+    else if (ext === 'glb' || ext === 'gltf') {
+      const data = ext === 'glb' ? await file.arrayBuffer() : await file.text();
+      new GLTFLoader().parse(data, '', (gltf) => importRoot(gltf.scene, file.name, unit), (err) => showError('GLTF: ' + (err.message || err)));
+    } else toast('Formato no compatible: usa STL, OBJ, GLB o GLTF', { type: 'warn' });
+  } catch (err) { showError('No se pudo importar: ' + err.message); } finally { busy(false); }
+}
+
+/* ---- exportar ---- */
+function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+const stamp = () => new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
+async function doExport() {
+  if (!gate('exportar')) return;
+  const f = $('expFormat').value, onlySel = $('expSel').checked, zup = $('expZup').checked;
+  const list = (onlySel && selected ? [selected] : exportables(true)).filter((o) => !o.userData.isReference && o.userData.kind !== 'cutter');
+  if (!list.length) return toast('No hay piezas para exportar', { type: 'warn' });
+  const group = new THREE.Group();
+  list.forEach((o) => { const c = new THREE.Mesh(o.geometry, o.material); c.position.copy(o.position); c.quaternion.copy(o.quaternion); c.scale.copy(o.scale); group.add(c); });
+  if (f === 'stl' && zup) group.rotation.x = Math.PI / 2;           // Y arriba (visor) → Z arriba (slicers)
+  group.updateMatrixWorld(true);
+  const name = 'diseno_yc_' + stamp();
+  try {
+    if (f === 'stl') download(new Blob([new STLExporter().parse(group, { binary: true })], { type: 'application/octet-stream' }), name + '.stl');
+    else if (f === 'obj') download(new Blob([new OBJExporter().parse(group)], { type: 'text/plain' }), name + '.obj');
+    else new GLTFExporter().parse(group, (res) => download(new Blob([res], { type: 'application/octet-stream' }), name + '.glb'), (e) => showError('Exportación falló: ' + e.message), { binary: true });
+    closeModal('exportModal'); toast('Exportado ' + list.length + (list.length === 1 ? ' pieza' : ' piezas'), { type: 'ok' });
+  } catch (err) { showError('No se pudo exportar: ' + err.message); }
+}
+
+/* =====================================================================
+   15. PROYECTO Y AUTOGUARDADO (compacto, sin serializar en JSON pesado)
+   ===================================================================== */
+const u8ToB64 = (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const b64ToU8 = (b) => { const s = atob(b), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; };
+function serializeObjects(list) {
+  return list.filter((o) => !o.userData.isReference).map((o) => {
+    const g = o.geometry, m = o.material;
+    return { name: o.name, kind: o.userData.kind || 'mesh', p: o.position.toArray(), q: o.quaternion.toArray(), s: o.scale.toArray(), color: m.color.getHex(),
+      rough: m.roughness, metal: m.metalness, flat: !!m.flatShading, opacity: m.opacity, visible: o.visible, positions: new Float32Array(g.attributes.position.array), index: g.index ? new Uint32Array(g.index.array) : null };
+  });
+}
+function meshFromData(d) {
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(d.positions), 3));
+  if (d.index) g.setIndex(new THREE.BufferAttribute(new Uint32Array(d.index), 1));
+  g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
+  let m;
+  if (d.kind === 'cutter') { m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0xff4d6d, transparent: true, opacity: 0.4, depthWrite: false })); m.userData.kind = 'cutter'; }
+  else { m = new THREE.Mesh(g, newMaterial(d.color, { roughness: d.rough ?? 0.55, metalness: d.metal ?? 0.05, flatShading: !!d.flat })); m.userData.kind = 'mesh'; if (d.opacity < 1) { m.material.transparent = true; m.material.opacity = d.opacity; } }
+  m.name = d.name; m.position.fromArray(d.p); m.quaternion.fromArray(d.q); m.scale.fromArray(d.s); m.visible = d.visible !== false; return m;
+}
+function loadObjects(arr) { arr.forEach((d) => { const m = meshFromData(d); scene.add(m); objects.push(m); }); refreshList(); selectObject(objects[objects.length - 1] || null); frameAll(); markDirty(); }
+function clearScene() {
+  liveGeometries().forEach((g) => g.dispose()); objects.forEach((o) => scene.remove(o)); objects.length = 0; undoStack.length = 0; redoStack.length = 0;
+  clearMeasures(); selected = null; selectObject(null); syncHistoryUI(); refreshList();
+}
+function saveProject() {
+  const data = { app: 'YC Editor 3D', v: 1, objects: serializeObjects(objects).map((d) => ({ ...d, positions: u8ToB64(new Uint8Array(d.positions.buffer)), index: d.index ? u8ToB64(new Uint8Array(d.index.buffer)) : null })) };
+  download(new Blob([JSON.stringify(data)], { type: 'application/json' }), 'proyecto_yc_' + stamp() + '.yc3d'); toast('Proyecto guardado', { type: 'ok' });
+}
+function loadProjectText(txt) {
+  const data = JSON.parse(txt); if (!Array.isArray(data.objects)) throw new Error('archivo de proyecto no válido');
+  clearScene(); loadObjects(data.objects.map((d) => ({ ...d, positions: new Float32Array(b64ToU8(d.positions).buffer), index: d.index ? new Uint32Array(b64ToU8(d.index).buffer) : null })));
+  toast('Proyecto abierto', { type: 'ok' });
+}
+const idb = () => new Promise((res, rej) => { const r = indexedDB.open('YC_Editor3D', 1); r.onupgradeneeded = () => r.result.createObjectStore('session'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+let saveTimer = null;
+function setSaveState(t) { const s = $('saveState'); if (s) s.textContent = t; }
+function markDirty() { clearTimeout(saveTimer); saveTimer = setTimeout(saveSessionNow, 3000); setSaveState('Cambios sin guardar'); }
+async function saveSessionNow() {
+  try {
+    const db = await idb();
+    await new Promise((res, rej) => { const tx = db.transaction('session', 'readwrite'); tx.objectStore('session').put({ savedAt: Date.now(), objects: serializeObjects(objects) }, 'latest'); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    db.close(); setSaveState('Sesión guardada ' + new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }));
+  } catch (err) { setSaveState('Autoguardado no disponible'); }
+}
+async function readSession() {
+  try { const db = await idb(); const d = await new Promise((res, rej) => { const r = db.transaction('session').objectStore('session').get('latest'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); db.close(); return d; } catch (_) { return null; }
+}
+async function restoreSession(silent) {
+  const d = await readSession();
+  if (!d || !d.objects?.length) { if (!silent) toast('No hay una sesión guardada', { type: 'warn' }); return; }
+  clearScene(); loadObjects(d.objects); toast('Sesión restaurada', { type: 'ok' });
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveSessionNow(); });
+window.addEventListener('pagehide', () => saveSessionNow());
+/* =====================================================================
+   16. CUENTAS Y PRUEBA DE 3 DÍAS (Firebase)
+   Pega aquí la configuración de tu app web de Firebase (Consola → Configuración del proyecto → Tus apps).
+   Mientras apiKey esté vacío, el editor funciona en "modo local", sin cuentas y sin límite.
+   ===================================================================== */
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyBGRLhcDfOqdQcTr4yLXwm4yqLi-_zdeyk',
+  authDomain: 'yc-suite.firebaseapp.com',
+  projectId: 'yc-suite',
+  storageBucket: 'yc-suite.firebasestorage.app',
+  messagingSenderId: '168822502428',
+  appId: '1:168822502428:web:81db022255d100f7c95bd9',
+};
+const TRIAL_DAYS = 3, FB_VER = '10.12.2', CONTACT_WA = '525649268628';
+const ACCESS = { local: true, active: true, plan: 'local', expiresAt: 0, daysLeft: null, email: '' };
+let fb = null;
+
+function openModal(id) { $(id)?.classList.add('open'); }
+function closeModal(id) { $(id)?.classList.remove('open'); }
+function authMsg(t, ok) { const m = $('authMsg'); if (m) { m.textContent = t || ''; m.className = 'msg' + (ok ? ' ok' : ''); } }
+function friendlyAuthError(e) {
+  const c = e?.code || '';
+  const map = {
+    'auth/invalid-credential': 'Correo o contraseña incorrectos.', 'auth/wrong-password': 'Correo o contraseña incorrectos.', 'auth/user-not-found': 'No existe una cuenta con ese correo.',
+    'auth/email-already-in-use': 'Ese correo ya tiene cuenta. Usa “Entrar”.', 'auth/weak-password': 'La contraseña es muy corta (mínimo 6 caracteres).',
+    'auth/invalid-email': 'El correo no es válido.', 'auth/too-many-requests': 'Demasiados intentos. Espera unos minutos.',
+    'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.', 'auth/unauthorized-domain': 'Este sitio no está autorizado en Firebase (Authentication → Configuración → Dominios autorizados).',
+    'auth/network-request-failed': 'Sin conexión a internet.', 'auth/operation-not-allowed': 'Ese método de acceso no está activado en Firebase.',
+  };
+  return map[c] || ('No se pudo completar: ' + (e?.message || c));
+}
+function evalAccess() {
+  if (ACCESS.local) { ACCESS.active = true; return; }
+  ACCESS.active = ACCESS.plan === 'premium' || Date.now() < ACCESS.expiresAt;
+  ACCESS.daysLeft = ACCESS.plan === 'premium' ? null : Math.max(0, Math.ceil((ACCESS.expiresAt - Date.now()) / 86400000));
+}
+function renderAccess() {
+  const t = $('acctText'), lo = $('btnLogout'); if (!t) return;
+  if (ACCESS.local) { t.textContent = 'Modo local'; if (lo) lo.style.display = 'none'; return; }
+  if (lo) lo.style.display = ACCESS.email ? 'inline-grid' : 'none';
+  if (ACCESS.plan === 'none') t.textContent = 'Sin sesión';
+  else if (ACCESS.plan === 'premium') t.innerHTML = 'Plan completo';
+  else t.innerHTML = ACCESS.active ? `Prueba: <b>${ACCESS.daysLeft}</b> ${ACCESS.daysLeft === 1 ? 'día' : 'días'}` : '<b>Prueba terminada</b>';
+}
+function gate(feature) {
+  evalAccess(); if (ACCESS.active) return true;
+  $('payText').textContent = `Tu prueba de 3 días terminó, así que no puedes ${feature}. Puedes seguir viendo y editando tus piezas. Para volver a ${feature} necesitas el plan completo.`;
+  openModal('payModal'); return false;
+}
+async function initAccount() {
+  if (!FIREBASE_CONFIG.apiKey) { ACCESS.local = true; renderAccess(); return; }
+  ACCESS.local = false; ACCESS.plan = 'none'; ACCESS.active = false; renderAccess(); openModal('authModal');
+  try {
+    const base = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
+    const [appM, authM, fsM] = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]);
+    const app = appM.initializeApp(FIREBASE_CONFIG);
+    fb = { authM, fsM, auth: authM.getAuth(app), db: fsM.getFirestore(app) };
+    authM.onAuthStateChanged(fb.auth, onUser);
+  } catch (err) { authMsg('No se pudo conectar con Firebase: ' + err.message); }
+}
+async function onUser(user) {
+  if (!user) { ACCESS.plan = 'none'; ACCESS.email = ''; ACCESS.active = false; renderAccess(); openModal('authModal'); return; }
+  closeModal('authModal'); ACCESS.email = user.email || '';
+  try {
+    const { fsM, db } = fb, ref = fsM.doc(db, 'users', user.uid);
+    let snap = await fsM.getDoc(ref);
+    if (!snap.exists()) { await fsM.setDoc(ref, { email: user.email || '', plan: 'trial', trialStart: fsM.serverTimestamp() }); snap = await fsM.getDoc(ref); }
+    const d = snap.data() || {}, start = d.trialStart?.toMillis?.() ?? Date.now();
+    ACCESS.plan = d.plan || 'trial'; ACCESS.expiresAt = start + TRIAL_DAYS * 86400000;
+    try { localStorage.setItem('yc_access_' + user.uid, JSON.stringify({ plan: ACCESS.plan, exp: ACCESS.expiresAt })); } catch (_) {}
+  } catch (err) {
+    showError('No se pudo verificar tu cuenta: ' + err.message);
+    let c = null; try { c = JSON.parse(localStorage.getItem('yc_access_' + user.uid) || 'null'); } catch (_) {}
+    ACCESS.plan = c?.plan || 'trial'; ACCESS.expiresAt = c?.exp || 0;
+  }
+  evalAccess(); renderAccess(); if (!ACCESS.active) openModal('payModal');
+}
+async function authDo(kind) {
+  if (!fb) return authMsg('Firebase todavía se está conectando. Intenta en un momento.');
+  const email = $('authEmail').value.trim(), pw = $('authPass').value;
+  if (!email || pw.length < 6) return authMsg('Escribe tu correo y una contraseña de al menos 6 caracteres.');
+  try {
+    authMsg('Un momento…', true);
+    if (kind === 'login') await fb.authM.signInWithEmailAndPassword(fb.auth, email, pw);
+    else await fb.authM.createUserWithEmailAndPassword(fb.auth, email, pw);
+    authMsg('');
+  } catch (e) { authMsg(friendlyAuthError(e)); }
+}
+setInterval(() => { if (!ACCESS.local) { const was = ACCESS.active; evalAccess(); renderAccess(); if (was && !ACCESS.active) openModal('payModal'); } }, 600000);
+
+/* =====================================================================
+   17. IA (Gemini) — bloques 3D a partir de texto o imagen, y asistente
+   ===================================================================== */
+const AI = { key: '', model: 'gemini-3.1-flash-lite' };
+try { AI.key = localStorage.getItem('yc_ai_key') || ''; AI.model = localStorage.getItem('yc_ai_model') || AI.model; } catch (_) {}
+function aiLog(text, cls) { const l = $('aiLog'); if (!l) return; const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = text; l.appendChild(d); l.scrollTop = l.scrollHeight; }
+async function callGemini(parts, { json = false, system = '' } = {}) {
+  if (!AI.key) throw new Error('Falta la clave de API de Gemini (panel IA → Conexión).');
+  const body = { contents: [{ role: 'user', parts }], generationConfig: { temperature: json ? 0.4 : 0.6 } };
+  if (system) body.systemInstruction = { parts: [{ text: system }] };
+  if (json) body.generationConfig.responseMimeType = 'application/json';
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI.model)}:generateContent`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': AI.key }, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error?.message || 'Error ' + res.status + '. Revisa la clave y el nombre del modelo.');
+  const text = (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('');
+  if (!text) throw new Error('La IA no devolvió texto (puede haberse bloqueado la respuesta).');
+  return text;
+}
+function imageToPart(file) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 768 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); res({ inlineData: { mimeType: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.8).split(',')[1] } });
+    };
+    img.onerror = () => rej(new Error('No se pudo leer la imagen')); img.src = url;
+  });
+}
+const AI_SYS_GEN = `Eres un asistente de modelado 3D para impresión 3D. Devuelve SOLO JSON válido con esta forma:
+{"nombre":"texto","partes":[{"forma":"box|sphere|cylinder|cone|torus|capsule|pyramid|hex|wedge|tube","tam":[ancho,alto,fondo],"pos":[x,y,z],"rot":[rx,ry,rz],"color":"#rrggbb"}]}
+Reglas: unidades en milímetros; el eje Y es hacia arriba; la pieza descansa sobre y=0; "pos" es el CENTRO de cada parte; "rot" en grados; máximo 40 partes; el objeto completo mide entre 20 y 200 mm; las partes deben tocarse o solaparse para formar un solo objeto reconocible. "cylinder", "cone", "tube" y "torus" tienen su eje a lo largo de Y (usa rot para girarlos).`;
+function aiExtractJson(t) { const a = t.indexOf('{'), b = t.lastIndexOf('}'); if (a < 0 || b < 0) throw new Error('La IA no devolvió JSON'); return JSON.parse(t.slice(a, b + 1)); }
+async function aiGenerate() {
+  if (!gate('usar la IA')) return;
+  const prompt = $('aiPrompt').value.trim(), file = $('aiImg').files[0];
+  if (!prompt && !file) return toast('Describe qué quieres generar o sube una imagen', { type: 'warn' });
+  busy(true, 'La IA está diseñando…'); aiLog(prompt || '(imagen)', 'me');
+  try {
+    const parts = [{ text: 'Diseña con formas básicas: ' + (prompt || 'lo que se ve en la imagen') }];
+    if (file) parts.push(await imageToPart(file));
+    const obj = aiExtractJson(await callGemini(parts, { json: true, system: AI_SYS_GEN }));
+    const list = (obj.partes || obj.parts || []).map((p) => ({ shape: p.forma || p.shape, size: p.tam || p.size, pos: p.pos || p.position, rot: p.rot || p.rotation, color: p.color }));
+    if (!list.length) throw new Error('La IA no devolvió partes');
+    buildParts(list, (obj.nombre || 'IA').toString().replace(/[^\w\-]+/g, '_').slice(0, 20) || 'IA');
+    aiLog(`Listo: ${Math.min(list.length, 60)} partes creadas en la escena. Puedes editarlas, unirlas o esculpirlas.`);
+  } catch (err) { aiLog('Error: ' + err.message); showError('IA: ' + err.message); } finally { busy(false); }
+}
+async function aiAsk() {
+  if (!gate('usar la IA')) return;
+  const prompt = $('aiPrompt').value.trim(); if (!prompt) return toast('Escribe tu pregunta', { type: 'warn' });
+  busy(true, 'Consultando…'); aiLog(prompt, 'me');
+  try {
+    const ctx = exportables(false).slice(0, 25).map((o) => { const b = new THREE.Box3().setFromObject(o, true), s = b.getSize(new THREE.Vector3()); return `${o.name}: ${fmt(s.x, 1)}×${fmt(s.y, 1)}×${fmt(s.z, 1)} mm`; }).join('; ') || 'escena vacía';
+    const sys = 'Eres un asistente experto en modelado 3D para impresión 3D (resina y FDM) dentro del editor YC Editor 3D. Responde en español, breve y práctico, con pasos concretos. Escena actual: ' + ctx + '.';
+    aiLog(await callGemini([{ text: prompt }], { system: sys }));
+  } catch (err) { aiLog('Error: ' + err.message); showError('IA: ' + err.message); } finally { busy(false); }
+}
+
+/* =====================================================================
+   18. ACCIONES (menús, botones y atajos)
+   ===================================================================== */
+const A = {
+  newProject() { if (objects.length && !confirm('¿Empezar un proyecto nuevo? Se borrará la escena actual. Guarda el proyecto antes si lo necesitas.')) return; clearScene(); toast('Proyecto nuevo'); },
+  openProject() { $('fileProject').click(); },
+  saveProject, restoreSession: () => restoreSession(false),
+  importPick() { $('fileImport').click(); }, exportModal() { openModal('exportModal'); }, doExport,
+  undo, redo, duplicate: duplicateSelected, delete() { if (selected) deleteObject(selected); }, deselect,
+  shape: (a) => addShape(a), template: (a) => TEMPLATES[a] && buildParts(TEMPLATES[a], a), addText,
+  refPick() { $('fileRef').click(); }, guidePick() { $('fileGuide').click(); }, guideClear: clearGuide,
+  tool: (a) => setTool(a), tab(a) { setTab(a); if (innerWidth <= 900) $('side').classList.add('open'); },
+  view: (a) => setView(a), toggleOrtho() { setOrtho(!S.ortho); }, focus() { selected && !selBox.isEmpty() ? frameBox(selBox) : frameAll(); }, focusAll: frameAll,
+  camPanel() { $('camPanel').classList.toggle('open'); }, togglePanel() { $('side').classList.toggle('open'); },
+  help() { openModal('helpModal'); }, closeModal: (a) => closeModal(a),
+  floor: floorSel, centerOrigin, centerPivot, resetRot, mirror: (a) => mirrorSelected(a), arrayLinear, arrayCircular,
+  sculptMode(a) { sculpt.mode = a; document.querySelectorAll('[data-act="sculptMode"]').forEach((b) => b.classList.toggle('on', b.dataset.arg === a)); },
+  subdivide: subdivideSelected, weld: weldSelected, flip: flipSelected, bakeScale: bakeScaleSelected, smoothMesh: smoothSelected, simplify: simplifySelected,
+  cutApply() { return doCut(selected, $('cutAxis').value, num('cutPosNum', 0), $('cutSide').value, $('cutCap').checked); },
+  cutBelow() { return doCut(selected, 'y', 0, 'pos', $('cutCap').checked); },
+  cutterBox: addCutter, cutBoxApply: applyCutters, cutBoxClear: clearCutters,
+  boolUnion: () => boolOp('union'), boolSub: () => boolOp('sub'), boolInter: () => boolOp('inter'), boolMerge: () => boolOp('merge'),
+  measureClear: clearMeasures,
+  aiGenerate, aiAsk,
+  aiSaveKey() { AI.key = $('aiKey').value.trim(); AI.model = $('aiModel').value.trim() || AI.model; try { localStorage.setItem('yc_ai_key', AI.key); localStorage.setItem('yc_ai_model', AI.model); } catch (_) {} toast('Datos de IA guardados en este navegador', { type: 'ok' }); },
+  contactWA() { window.open(`https://wa.me/${CONTACT_WA}?text=${encodeURIComponent('Hola, quiero el plan completo de YC Editor 3D')}`, '_blank'); },
+  logout() { fb?.authM.signOut(fb.auth); },
+};
+const closeMenus = () => document.querySelectorAll('.menu.open').forEach((m) => m.classList.remove('open'));
+document.addEventListener('click', (e) => {
+  const mb = e.target.closest('.menu-btn');
+  if (mb) { const m = mb.parentElement, was = m.classList.contains('open'); closeMenus(); if (!was) m.classList.add('open'); return; }
+  if (!e.target.closest('#camPanel') && !e.target.closest('#btnCam')) $('camPanel')?.classList.remove('open');
+  const a = e.target.closest('[data-act]'); closeMenus(); if (!a) return;
+  const f = A[a.dataset.act]; if (!f) { console.warn('[YC] acción sin definir:', a.dataset.act); return; }
+  Promise.resolve().then(() => f(a.dataset.arg, a)).catch((err) => showError(err.message || String(err)));
+});
+
+/* ---- atajos de teclado ---- */
+window.addEventListener('keydown', (e) => {
+  const t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) { if (e.key === 'Escape') t.blur(); return; }
+  const k = e.key.toLowerCase(), ctrl = e.ctrlKey || e.metaKey;
+  if (ctrl) {
+    if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+    else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+    else if (k === 'd') { e.preventDefault(); duplicateSelected(); }
+    else if (k === 's') { e.preventDefault(); saveProject(); }
+    else if (k === 'e') { e.preventDefault(); openModal('exportModal'); }
+    return;
+  }
+  const digits = { 1: 'front', 2: 'back', 3: 'right', 4: 'left', 5: 'top', 6: 'bottom', 0: 'iso' };
+  if (k in digits) setView(digits[k]);
+  else if (k === 'q') setTool('select'); else if (k === 'g') setTool('move'); else if (k === 'r') setTool('rotate'); else if (k === 's') setTool('scale');
+  else if (k === 'm') setTool('measure'); else if (k === 'b') setTool('sculpt'); else if (k === 'x') setTool('cut');
+  else if (k === 'f') A.focus(); else if (k === 'a') frameAll(); else if (k === 'o') setOrtho(!S.ortho);
+  else if (k === 'delete' || k === 'backspace') { if (selected) { e.preventDefault(); deleteObject(selected); } }
+  else if (k === '?') openModal('helpModal');
+  else if (k === 'escape') {
+    const open = document.querySelector('.modal.open'); if (open && open.id !== 'authModal') return closeModal(open.id);
+    if (['measure', 'sculpt', 'cut'].includes(S.tool)) setTool('move'); else deselect();
+  }
+});
+
+/* =====================================================================
+   19. CONEXIÓN DE CONTROLES DEL PANEL E INICIO
+   ===================================================================== */
+function buildMatPresets() {
+  const box = $('matPresets'); if (!box) return;
+  MAT_PRESETS.forEach(([n, c, m, r]) => {
+    const b = document.createElement('button'); b.style.background = c; b.title = n;
+    b.onclick = () => { if (!selected) return; pushUndo(); useMat((mt) => { mt.color.set(c); if ('metalness' in mt) { mt.metalness = m; mt.roughness = r; } }); syncMaterialUI(); };
+    box.appendChild(b);
+  });
+}
+function wireControls() {
+  [['pos', 'pos'], ['rot', 'rot'], ['sca', 'sca'], ['dim', 'dim']].forEach(([id, kind]) =>
+    ['X', 'Y', 'Z'].forEach((ax, i) => on(id + ax, 'change', (e) => applyTransformField(kind, i, parseFloat(e.target.value)))));
+  on('snapOn', 'change', (e) => { S.snap = e.target.checked; applySnap(); });
+  on('snapMm', 'change', (e) => { S.snapMm = Math.max(0.1, +e.target.value || 1); applySnap(); });
+  on('snapDeg', 'change', (e) => { S.snapDeg = Math.max(1, +e.target.value || 15); applySnap(); });
+
+  on('matColor', 'click', () => selected && pushUndo());
+  on('matColor', 'input', (e) => useMat((m) => m.color.set(e.target.value)));
+  on('matMetal', 'input', (e) => { useMat((m) => { if ('metalness' in m) m.metalness = +e.target.value; }); $('vMetal').textContent = fmt(+e.target.value); });
+  on('matRough', 'input', (e) => { useMat((m) => { if ('roughness' in m) m.roughness = +e.target.value; }); $('vRough').textContent = fmt(+e.target.value); });
+  on('matOpacity', 'input', (e) => { const v = +e.target.value; useMat((m) => { m.transparent = v < 1; m.opacity = v; m.depthWrite = v >= 1; }); $('vOpac').textContent = fmt(v); });
+  on('matFlat', 'change', (e) => { pushUndo(); useMat((m) => { m.flatShading = e.target.checked; }); });
+  on('matWire', 'change', (e) => useMat((m) => { m.wireframe = e.target.checked; }));
+  on('refOpacity', 'input', (e) => { objects.filter((o) => o.userData.isReference).forEach((o) => { o.material.opacity = +e.target.value; }); $('vRef').textContent = fmt(+e.target.value); requestRender(); });
+
+  const sv = (id, out, f) => on(id, 'input', (e) => { $(out).textContent = f(+e.target.value); });
+  sv('sRadius', 'vSR', (v) => fmt(v, 1) + ' mm'); sv('sStrength', 'vSS', (v) => v + '%');
+  on('camZoom', 'input', (e) => { zoomCfg.speed = +e.target.value; $('vZoom').textContent = fmt(+e.target.value); });
+  on('camRot', 'input', (e) => { orbit.rotateSpeed = +e.target.value; $('vRot').textContent = fmt(+e.target.value); });
+  on('camPan', 'input', (e) => { orbit.panSpeed = +e.target.value; $('vPan').textContent = fmt(+e.target.value); });
+  on('camFov', 'input', (e) => { persCam.fov = +e.target.value; persCam.updateProjectionMatrix(); $('vFov').textContent = e.target.value + '°'; requestRender(); });
+  on('camDamp', 'change', (e) => { orbit.enableDamping = e.target.checked; });
+  on('camCursor', 'change', (e) => { zoomCfg.toCursor = e.target.checked; });
+  on('tDims', 'change', (e) => { S.showDims = e.target.checked; requestRender(); });
+  on('tStudio', 'change', (e) => setStudio(e.target.checked));
+  on('tWireAll', 'change', (e) => { S.wireAll = e.target.checked; objects.forEach((o) => { if (o.material && !o.userData.isReference) o.material.wireframe = S.wireAll; }); syncMaterialUI(); requestRender(); });
+
+  ['plateW', 'plateD', 'plateH'].forEach((id) => on(id, 'change', () => {
+    S.plate.w = clamp(num('plateW', 200), 20, 2000); S.plate.d = clamp(num('plateD', 200), 20, 2000); S.plate.h = clamp(num('plateH', 200), 20, 2000);
+    buildPlate(); preciseBox(); doInfo();
+  }));
+  on('tPlate', 'change', (e) => { S.plate.grid = e.target.checked; buildPlate(); });
+  on('tVol', 'change', (e) => { S.plate.vol = e.target.checked; buildPlate(); });
+
+  on('cutAxis', 'change', () => { updateCutRange(); updateCutPreview(); });
+  on('cutPos', 'input', (e) => { $('cutPosNum').value = +(+e.target.value).toFixed(2); updateCutPreview(); });
+  on('cutPosNum', 'change', (e) => { const v = parseFloat(e.target.value); if (Number.isFinite(v)) { $('cutPos').value = v; updateCutPreview(); } });
+
+  on('fileImport', 'change', (e) => { [...e.target.files].forEach(importFile); e.target.value = ''; });
+  on('fileProject', 'change', (e) => { [...e.target.files].forEach(importFile); e.target.value = ''; });
+  on('fileGuide', 'change', (e) => { if (e.target.files[0]) loadGuide(e.target.files[0]); e.target.value = ''; });
+  on('fileRef', 'change', (e) => { if (e.target.files[0]) addReference(e.target.files[0]); e.target.value = ''; });
+
+  on('btnLogin', 'click', () => authDo('login')); on('btnRegister', 'click', () => authDo('register'));
+  on('authPass', 'keydown', (e) => { if (e.key === 'Enter') authDo('login'); });
+  on('btnGoogle', 'click', async () => { if (!fb) return authMsg('Firebase todavía se está conectando.'); try { await fb.authM.signInWithPopup(fb.auth, new fb.authM.GoogleAuthProvider()); } catch (e) { authMsg(friendlyAuthError(e)); } });
+  on('btnReset', 'click', async () => {
+    const email = $('authEmail').value.trim(); if (!fb) return authMsg('Firebase todavía se está conectando.'); if (!email) return authMsg('Escribe tu correo arriba y vuelve a pulsar.');
+    try { await fb.authM.sendPasswordResetEmail(fb.auth, email); authMsg('Te enviamos un correo para restablecer la contraseña.', true); } catch (e) { authMsg(friendlyAuthError(e)); }
+  });
+  document.querySelectorAll('.modal').forEach((m) => m.addEventListener('mousedown', (e) => { if (e.target === m && m.id !== 'authModal') closeModal(m.id); }));
+
+  $('aiKey').value = AI.key; $('aiModel').value = AI.model;
+  ['vZoom', 'vRot', 'vPan'].forEach((id, i) => { $(id).textContent = fmt([0.6, 0.8, 1][i]); }); $('vFov').textContent = '45°';
+  $('vSR').textContent = '8.0 mm'; $('vSS').textContent = '35%'; $('vRef').textContent = '0.50';
+  $('vMetal').textContent = '0.05'; $('vRough').textContent = '0.55'; $('vOpac').textContent = '1.00';
+}
+function init() {
+  buildPlate(); applySnap(); resizeAll(); buildMatPresets(); wireControls();
+  setTab('obj'); setTool('move'); syncHistoryUI(); refreshList(); renderAccess();
+  needCSG();                                           // precarga el motor de booleanas sin bloquear
+  loop();
+  initAccount();
+  readSession().then((d) => { if (d?.objects?.length) toast('Hay una sesión anterior guardada', { ms: 10000, action: { label: 'Restaurar', fn: () => restoreSession(false) } }); });
+  window.__yc_ready = true;
+}
+try { init(); } catch (err) { showError('Error al iniciar: ' + err.message); console.error(err); }
+</script>
+</body>
+</html>
