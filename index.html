@@ -2283,12 +2283,16 @@ function scanAddLog(msg, good=true) {
 const SCAN = { stream:null, photos:[], bad:0, totalQuality:0, session:Date.now(), running:false };
 function scanUpdate() {
   const n=SCAN.photos.length, good=n;
-  $('scanCount').textContent=n; $('scanGood').textContent=good; $('scanBad').textContent=SCAN.bad;
-  $('scanAvg').textContent=n ? Math.round(SCAN.totalQuality/n)+'%' : '—';
-  $('scanSession').textContent=n ? new Date(SCAN.session).toLocaleTimeString() : 'Nueva';
-  $('scanMeter').style.width=Math.min(100,n/36*100)+'%';
+  // El escáner está oculto temporalmente. Si sus controles no están en el DOM,
+  // no debe impedir que el editor 3D arranque.
+  const set=(id,v)=>{ const el=$(id); if(el) el.textContent=v; };
+  const style=(id,p,v)=>{ const el=$(id); if(el) el.style[p]=v; };
+  set('scanCount',n); set('scanGood',good); set('scanBad',SCAN.bad);
+  set('scanAvg',n ? Math.round(SCAN.totalQuality/n)+'%' : '—');
+  set('scanSession',n ? new Date(SCAN.session).toLocaleTimeString() : 'Nueva');
+  style('scanMeter','width',Math.min(100,n/36*100)+'%');
   const ring=Math.min(3,Math.floor(n/12)+1), within=n%12;
-  $('scanRing').textContent='Anillo '+ring+' · '+within+'/12';
+  set('scanRing','textContent','Anillo '+ring+' · '+within+'/12');
 }
 function scanQualityFromCanvas(canvas) {
   const ctx=canvas.getContext('2d',{willReadFrequently:true}), w=canvas.width, h=canvas.height;
