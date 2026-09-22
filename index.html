@@ -174,6 +174,38 @@ table.keys td:first-child{font:12px var(--mono);color:var(--acc);white-space:now
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 /* ===== YC🪐 EDITOR 3D — rediseño premium ===== */
+/* ===== SCANER3D REFERENCE UI ===== */
+:root{
+ --bg:#030914;--bar:#06101c;--panel:#071522;--panel2:#0a1c2d;
+ --line:#123957;--line2:#245b82;--text:#eef8ff;--mut:#8aa6ba;
+ --acc:#e5b44d;--blue:#36a9ff;--cyan:#72d4ff;--ok:#45e99a;--err:#ff7187;
+}
+html,body{background:#030914;color:var(--text)}
+body{background:radial-gradient(70% 80% at 52% 42%,rgba(19,82,132,.20),transparent 68%),#030914}
+#app{grid-template-rows:74px 1fr 30px}
+#topbar{height:74px;padding:0 20px;background:linear-gradient(180deg,#071525,#040c16);border-bottom:1px solid #245477;box-shadow:0 0 30px rgba(0,111,190,.12)}
+.brand{gap:12px;margin-right:25px}.brand i{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#b97b19 70%);color:#101820;font-size:15px;border:1px solid #f4d67b;box-shadow:0 0 20px rgba(229,180,77,.35)}.brand span{font-size:12px;color:#80bce1}
+.menu-btn{padding:10px 13px}.menu-btn:hover,.menu.open>.menu-btn{background:#0b2941}
+#main{grid-template-columns:276px 1fr 390px}
+#toolbar{align-items:stretch;padding:13px 13px 10px;gap:6px;background:linear-gradient(180deg,#061322,#030b14);border-right:1px solid #245477}
+.tool{width:100%;height:48px;border-radius:9px;display:flex;justify-content:flex-start;gap:14px;padding:0 17px;color:#a6c4d7;font-size:15px}
+.tool::after{font-size:14px}.tool.active{background:linear-gradient(90deg,rgba(22,133,214,.55),rgba(9,43,70,.7));color:#e9f8ff;border-color:#38a9ff;box-shadow:inset 3px 0 #36a9ff,0 0 22px rgba(54,169,255,.14)}
+.tool:hover{background:#0a263c;color:#fff;border-color:#1d587e}.tsep{width:100%;margin:7px 0;background:#214968}
+#viewport{background:radial-gradient(65% 70% at 50% 45%,rgba(20,93,145,.25),transparent 67%),linear-gradient(180deg,#06111d,#020811)}
+#viewport::after{content:'';position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(54,169,255,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(54,169,255,.10) 1px,transparent 1px);background-size:58px 58px;mask-image:linear-gradient(to bottom,transparent,#000 16%,#000 82%,transparent)}
+#hint{left:18px;top:18px;background:rgba(2,11,19,.80);border:1px solid #1d5276;color:#9cb8ca;padding:8px 12px}
+#viewbar{right:18px;top:18px;background:rgba(2,11,19,.84);border:1px solid #1d5276}
+#viewbar button.on{color:#f1c968}
+#side{background:linear-gradient(180deg,#091827,#050f1a);border-left:1px solid #245477;box-shadow:-12px 0 32px rgba(0,0,0,.28)}
+#tabs{background:#061321;border-bottom:1px solid #245477}.tab{padding:11px 0 9px;color:#7798ad;font-size:11px}.tab.active{color:#69c7ff;border-bottom-color:#36a9ff;background:rgba(54,169,255,.07)}
+.tabpane{padding:13px 13px 34px}.sec{border:1px solid #1b4564;border-radius:10px;background:linear-gradient(180deg,#0c2031,#081827);margin-bottom:10px}.sec>summary{padding:10px 12px}.sec .body{padding:0 12px 12px}
+.btn{background:#071827;border:1px solid #235577;border-radius:8px}.btn:hover{border-color:#43b8ff;color:#9cddff;background:#0b2539}.btn.pri{background:linear-gradient(90deg,#e7bd5a,#b98425);border-color:#f1d07a;color:#111820;box-shadow:0 0 16px rgba(229,180,77,.15)}
+input[type=number],input[type=text],input[type=password],input[type=email],select,textarea{background:#040c14;border:1px solid #204b68}.val,.kv span:last-child{color:#62c5ff}input:focus,select:focus,textarea:focus{border-color:#36a9ff;box-shadow:0 0 0 2px rgba(54,169,255,.10)}
+input[type=range],input[type=checkbox]{accent-color:#36a9ff}.orow{background:#06121e}.orow.sel{border-color:#e5b44d;background:rgba(229,180,77,.08)}
+#status{background:#040d17;border-top:1px solid #245477;padding:0 18px}#status b{color:#59c5ff}
+.card{background:linear-gradient(180deg,#0c2031,#06111d);border-color:#2a5f82}.toast{background:#0a1d2d;border-color:#285a79}
+@media(max-width:900px){#main{grid-template-columns:52px 1fr}#toolbar{padding:10px 6px}.tool{padding:0;justify-content:center}.tool::after{display:none}}
+
 /* ===== YC🪐 SCANNER ===== */
 .scan-tab{position:relative}
 .scan-tab::after{content:'';position:absolute;right:7px;top:7px;width:5px;height:5px;border-radius:50%;background:#d9a441;box-shadow:0 0 8px rgba(217,164,65,.7)}
