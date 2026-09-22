@@ -174,6 +174,30 @@ table.keys td:first-child{font:12px var(--mono);color:var(--acc);white-space:now
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 /* ===== YC🪐 EDITOR 3D — rediseño premium ===== */
+/* ===== YC🪐 SCANNER ===== */
+.scan-tab{position:relative}
+.scan-tab::after{content:'';position:absolute;right:7px;top:7px;width:5px;height:5px;border-radius:50%;background:#d9a441;box-shadow:0 0 8px rgba(217,164,65,.7)}
+.scan-status{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;margin-bottom:9px;border:1px solid #173c59;border-radius:8px;background:#06111b;font-size:10px;color:#8da9bc}
+.scan-status>div{display:flex;align-items:center;gap:7px}.qdot{width:7px;height:7px;border-radius:50%;background:#62d98b;box-shadow:0 0 8px rgba(98,217,139,.7)}.qdot.bad{background:#ff7187;box-shadow:0 0 8px rgba(255,113,135,.7)}.qdot.warn{background:#d9a441;box-shadow:0 0 8px rgba(217,164,65,.7)}
+.scan-preview-wrap{position:relative;overflow:hidden;border:1px solid #245173;border-radius:9px;background:#02070b;aspect-ratio:4/3;margin-bottom:9px}
+#scanVideo{width:100%;height:100%;object-fit:cover;display:block;background:#02070b}
+#scanOverlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.scan-crosshair{position:absolute;inset:13%;border:1px dashed rgba(86,185,255,.58);border-radius:18px;box-shadow:0 0 0 999px rgba(2,8,14,.14)}
+.scan-guide{position:absolute;left:0;right:0;bottom:7px;text-align:center;color:#d8eaf5;text-shadow:0 1px 4px #000;font-size:10px}
+.scan-guide small{display:block;color:#9ab1c0;margin-top:2px;font-size:8px}
+.scan-rings{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.scan-ring{padding:8px 4px;text-align:center;border:1px solid #173c59;border-radius:8px;background:#06111b}
+.scan-ring span{display:grid;place-items:center;width:20px;height:20px;margin:0 auto 4px;border-radius:50%;background:#102a40;color:#7fcaff;font-weight:700}
+.scan-ring b{display:block;font-size:9px;color:#c6d9e5}.scan-ring small{display:block;margin-top:2px;color:#69879d;font-size:8px}
+.scan-meter{height:5px;margin:9px 0;background:#06101a;border-radius:8px;overflow:hidden;border:1px solid #173c59}
+.scan-meter i{display:block;width:0;height:100%;background:linear-gradient(90deg,#56b9ff,#d9a441);transition:width .25s}
+.scan-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.scan-stats div{padding:7px 8px;border:1px solid #173c59;border-radius:7px;background:#06111b}
+.scan-stats span{display:block;color:#69879d;font-size:8px}.scan-stats b{display:block;margin-top:2px;color:#d8e8f3;font-size:12px}
+.scan-log{max-height:110px;overflow:auto;margin-top:7px;font-size:9px;color:#7995a8}
+.scan-log div{padding:4px 0;border-bottom:1px solid rgba(36,81,115,.35)}
+.scan-log .good{color:#78dda7}.scan-log .bad{color:#ff8a9c}
+
 :root{
   --bg:#050b12; --bar:#07111d; --panel:#091624; --panel2:#0c1d2e;
   --line:#15334e; --line2:#245173; --text:#eaf5ff; --mut:#829bb0;
@@ -469,6 +493,7 @@ input[type=color]{border-color:#245173}
     <aside id="side">
       <div id="tabs">
         <button class="tab active" data-act="tab" data-arg="obj"><svg class="ic"><use href="#i-layers"/></svg>Objeto</button>
+        <button class="tab scan-tab" data-act="tab" data-arg="scan"><svg class="ic"><use href="#i-camera"/></svg>Escaneo</button>
         <button class="tab" data-act="tab" data-arg="create"><svg class="ic"><use href="#i-plus"/></svg>Crear</button>
         <button class="tab" data-act="tab" data-arg="sculpt"><svg class="ic"><use href="#i-sculpt"/></svg>Esculpir</button>
         <button class="tab" data-act="tab" data-arg="mesh"><svg class="ic"><use href="#i-mesh"/></svg>Malla</button>
@@ -674,6 +699,59 @@ input[type=color]{border-color:#245173}
         </div></details>
       </div>
 
+      <!-- ===== ESCANEO YC🪐 ===== -->
+      <div class="tabpane" id="pane-scan">
+        <details class="sec" open><summary>Captura fotogramétrica <em id="scanCount">0</em></summary><div class="body">
+          <p class="note" style="margin-top:0">Captura una vuelta completa alrededor de la pieza. YC🪐 analiza cada foto antes de aceptarla y evita llenar la sesión con imágenes borrosas, oscuras o repetidas.</p>
+          <div class="scan-status">
+            <div><span id="scanQualityDot" class="qdot"></span><b id="scanQuality">Listo para capturar</b></div>
+            <span id="scanRing">Anillo 1 · 0/12</span>
+          </div>
+          <div class="scan-preview-wrap">
+            <video id="scanVideo" playsinline autoplay muted></video>
+            <canvas id="scanOverlay"></canvas>
+            <div class="scan-crosshair"></div>
+            <div class="scan-guide"><span>Coloca la pieza dentro</span><small>distancia constante · sin zoom digital</small></div>
+          </div>
+          <div class="g2">
+            <button class="btn pri" data-act="scanCamera">Activar cámara</button>
+            <button class="btn" data-act="scanCapture">Capturar foto</button>
+          </div>
+          <div class="g2">
+            <button class="btn sm" data-act="scanPick">Agregar fotos</button>
+            <button class="btn sm" data-act="scanClear">Limpiar sesión</button>
+          </div>
+          <input type="file" id="scanFiles" accept="image/*" multiple capture="environment" style="display:none">
+        </div></details>
+
+        <details class="sec" open><summary>Guía de cobertura</summary><div class="body">
+          <div class="scan-rings">
+            <div class="scan-ring"><span>1</span><b>Frontal</b><small>12 vistas</small></div>
+            <div class="scan-ring"><span>2</span><b>Media</b><small>12 vistas</small></div>
+            <div class="scan-ring"><span>3</span><b>Superior</b><small>12 vistas</small></div>
+          </div>
+          <div class="scan-meter"><i id="scanMeter"></i></div>
+          <p class="note">Meta recomendada: 36 fotos con 25–40% de solape entre vistas. Para una pieza pequeña, gira la pieza o camina alrededor de ella manteniendo la cámara a la misma distancia.</p>
+        </div></details>
+
+        <details class="sec"><summary>Diagnóstico de captura</summary><div class="body">
+          <div class="scan-stats">
+            <div><span>Fotos válidas</span><b id="scanGood">0</b></div>
+            <div><span>Fotos descartadas</span><b id="scanBad">0</b></div>
+            <div><span>Calidad media</span><b id="scanAvg">—</b></div>
+            <div><span>Sesión</span><b id="scanSession">Nueva</b></div>
+          </div>
+          <div id="scanLog" class="scan-log"></div>
+        </div></details>
+
+        <details class="sec"><summary>Reconstrucción</summary><div class="body">
+          <button class="btn pri" data-act="scanPrepare">Preparar reconstrucción</button>
+          <button class="btn sm" data-act="scanWebSfm" style="margin-top:7px">Abrir SfM WebGPU</button>
+          <p class="note">“Preparar” guarda la sesión y crea el manifiesto local. El botón SfM abre una implementación experimental de Structure-from-Motion que corre en Chrome/WebGPU. La reconstrucción completa todavía requiere una etapa específica de SfM/MVS.</p>
+          <div id="scanManifest" class="note" style="display:none"></div>
+        </div></details>
+      </div>
+
       <!-- ===== IA ===== -->
       <div class="tabpane" id="pane-ai">
         <details class="sec" open><summary>Conexión con Gemini</summary><div class="body">
@@ -708,6 +786,7 @@ input[type=color]{border-color:#245173}
 <input type="file" id="fileGuide" accept=".stl" style="display:none">
 <input type="file" id="fileRef" accept="image/*" style="display:none">
 <input type="file" id="fileProject" accept=".yc3d,.json" style="display:none">
+<input type="file" id="scanFilesHidden" accept="image/*" multiple style="display:none">
 
 <div id="toasts"></div>
 
@@ -2201,6 +2280,77 @@ async function aiAsk() {
 /* =====================================================================
    18. ACCIONES (menús, botones y atajos)
    ===================================================================== */
+function scanAddLog(msg, good=true) {
+  const box = $('scanLog'); if (!box) return;
+  const d = document.createElement('div'); d.className = good ? 'good' : 'bad'; d.textContent = msg;
+  box.prepend(d);
+}
+const SCAN = { stream:null, photos:[], bad:0, totalQuality:0, session:Date.now(), running:false };
+function scanUpdate() {
+  const n=SCAN.photos.length, good=n;
+  $('scanCount').textContent=n; $('scanGood').textContent=good; $('scanBad').textContent=SCAN.bad;
+  $('scanAvg').textContent=n ? Math.round(SCAN.totalQuality/n)+'%' : '—';
+  $('scanSession').textContent=n ? new Date(SCAN.session).toLocaleTimeString() : 'Nueva';
+  $('scanMeter').style.width=Math.min(100,n/36*100)+'%';
+  const ring=Math.min(3,Math.floor(n/12)+1), within=n%12;
+  $('scanRing').textContent='Anillo '+ring+' · '+within+'/12';
+}
+function scanQualityFromCanvas(canvas) {
+  const ctx=canvas.getContext('2d',{willReadFrequently:true}), w=canvas.width, h=canvas.height;
+  const step=Math.max(2,Math.floor(Math.min(w,h)/180)), data=ctx.getImageData(0,0,w,h).data;
+  let sum=0,sum2=0,count=0,edge=0,prev=0;
+  for(let y=step;y<h;y+=step) for(let x=step;x<w;x+=step){
+    const p=(y*w+x)*4, g=.299*data[p]+.587*data[p+1]+.114*data[p+2];
+    sum+=g; sum2+=g*g; count++;
+    const q=((y-step)*w+x)*4, pg=.299*data[q]+.587*data[q+1]+.114*data[q+2];
+    edge+=Math.abs(g-pg); prev=g;
+  }
+  const mean=sum/count, variance=Math.max(0,sum2/count-mean*mean), sharp=Math.min(100,edge/count*2.8);
+  const exposure=Math.max(0,100-Math.abs(mean-128)/1.28);
+  const quality=Math.round(Math.max(0,Math.min(100,sharp*.65+exposure*.35)));
+  return {quality,mean,sharp};
+}
+async function scanBlobToPhoto(blob, source='foto') {
+  const img=new Image(); img.src=URL.createObjectURL(blob); await img.decode();
+  const max=1280, scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+  const cv=document.createElement('canvas'); cv.width=Math.max(1,Math.round(img.naturalWidth*scale)); cv.height=Math.max(1,Math.round(img.naturalHeight*scale));
+  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height); URL.revokeObjectURL(img.src);
+  const q=scanQualityFromCanvas(cv);
+  if(q.quality<42){ SCAN.bad++; scanAddLog(source+': descartada ('+q.quality+'% de calidad)',false); scanUpdate(); return false; }
+  const out=await new Promise(res=>cv.toBlob(res,'image/jpeg',.88));
+  SCAN.photos.push({blob:out,quality:q.quality,mean:q.mean,sharp:q.sharp,at:Date.now()});
+  SCAN.totalQuality+=q.quality; scanAddLog(source+': aceptada ('+q.quality+'%)',true); scanUpdate(); return true;
+}
+async function scanCamera() {
+  if(SCAN.stream){ $('scanVideo').srcObject=SCAN.stream; return; }
+  if(!navigator.mediaDevices?.getUserMedia) throw new Error('Este navegador no permite acceso a cámara.');
+  SCAN.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
+  $('scanVideo').srcObject=SCAN.stream; $('scanVideo').play(); toast('Cámara activa · mantén distancia constante',{type:'ok'});
+}
+async function scanCapture() {
+  if(!SCAN.stream) return scanCamera();
+  const v=$('scanVideo'); if(!v.videoWidth) throw new Error('La cámara todavía no está lista.');
+  const cv=document.createElement('canvas'); cv.width=v.videoWidth; cv.height=v.videoHeight; cv.getContext('2d').drawImage(v,0,0);
+  await scanBlobToPhoto(await new Promise(r=>cv.toBlob(r,'image/jpeg',.9)),'Cámara');
+}
+async function scanPickFiles(files) {
+  for(const f of files) await scanBlobToPhoto(f,f.name);
+}
+function scanClear() {
+  SCAN.photos=[]; SCAN.bad=0; SCAN.totalQuality=0; SCAN.session=Date.now();
+  const log=$('scanLog'); if(log) log.innerHTML=''; scanUpdate(); $('scanManifest').style.display='none';
+  toast('Sesión de escaneo vaciada');
+}
+function scanPrepare() {
+  if(SCAN.photos.length<8) throw new Error('Necesitas al menos 8 fotos válidas. Para una reconstrucción real, apunta a 24–36 o más.');
+  const manifest={app:'YC🪐 Editor 3D',version:1,created:new Date().toISOString(),count:SCAN.photos.length,quality:Math.round(SCAN.totalQuality/SCAN.photos.length),files:SCAN.photos.map((p,i)=>({name:'yc3d_'+String(i+1).padStart(3,'0')+'.jpg',quality:p.quality}))};
+  const blob=new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='YC-Scanner-session.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  $('scanManifest').style.display='block'; $('scanManifest').textContent='Sesión preparada: '+manifest.count+' fotos · calidad media '+manifest.quality+'%.';
+  toast('Manifiesto de reconstrucción preparado',{type:'ok'});
+}
+function scanWebSfm(){ window.open('https://websfm.onrender.com/','_blank','noopener'); }
+
 const A = {
   newProject() { if (objects.length && !confirm('¿Empezar un proyecto nuevo? Se borrará la escena actual. Guarda el proyecto antes si lo necesitas.')) return; clearScene(); toast('Proyecto nuevo'); },
   openProject() { $('fileProject').click(); },
@@ -2210,6 +2360,8 @@ const A = {
   shape: (a) => addShape(a), template: (a) => TEMPLATES[a] && buildParts(TEMPLATES[a], a), addText,
   refPick() { $('fileRef').click(); }, guidePick() { $('fileGuide').click(); }, guideClear: clearGuide,
   tool: (a) => setTool(a), tab(a) { setTab(a); if (innerWidth <= 900) $('side').classList.add('open'); },
+  scanCamera, scanCapture, scanClear, scanPrepare, scanWebSfm,
+  scanPick() { $('scanFiles').click(); },
   view: (a) => setView(a), toggleOrtho() { setOrtho(!S.ortho); }, focus() { selected && !selBox.isEmpty() ? frameBox(selBox) : frameAll(); }, focusAll: frameAll,
   camPanel() { $('camPanel').classList.toggle('open'); }, togglePanel() { $('side').classList.toggle('open'); },
   help() { openModal('helpModal'); }, closeModal: (a) => closeModal(a),
@@ -2315,6 +2467,8 @@ function wireControls() {
   on('fileProject', 'change', (e) => { [...e.target.files].forEach(importFile); e.target.value = ''; });
   on('fileGuide', 'change', (e) => { if (e.target.files[0]) loadGuide(e.target.files[0]); e.target.value = ''; });
   on('fileRef', 'change', (e) => { if (e.target.files[0]) addReference(e.target.files[0]); e.target.value = ''; });
+  on('scanFiles', 'change', (e) => { scanPickFiles([...e.target.files]); e.target.value=''; });
+  on('scanFilesHidden', 'change', (e) => { scanPickFiles([...e.target.files]); e.target.value=''; });
 
   on('btnLogin', 'click', () => authDo('login')); on('btnRegister', 'click', () => authDo('register'));
   on('authPass', 'keydown', (e) => { if (e.key === 'Enter') authDo('login'); });
@@ -2332,7 +2486,7 @@ function wireControls() {
 }
 function init() {
   buildPlate(); applySnap(); resizeAll(); buildMatPresets(); wireControls();
-  setTab('obj'); setTool('move'); syncHistoryUI(); refreshList(); renderAccess();
+  setTab('obj'); setTool('move'); syncHistoryUI(); refreshList(); renderAccess(); scanUpdate();
   needCSG();                                           // precarga el motor de booleanas sin bloquear
   loop();
   initAccount();
