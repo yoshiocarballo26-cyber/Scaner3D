@@ -525,7 +525,7 @@ input[type=color]{border-color:#245173}
     <aside id="side">
       <div id="tabs">
         <button class="tab active" data-act="tab" data-arg="obj"><svg class="ic"><use href="#i-layers"/></svg>Objeto</button>
-        <button class="tab scan-tab" data-act="tab" data-arg="scan"><svg class="ic"><use href="#i-focus"/></svg>Escaneo</button>
+        <button class="tab" data-act="tab" data-arg="soon"><svg class="ic"><use href="#i-focus"/></svg>Próximamente</button>
         <button class="tab" data-act="tab" data-arg="create"><svg class="ic"><use href="#i-plus"/></svg>Crear</button>
         <button class="tab" data-act="tab" data-arg="sculpt"><svg class="ic"><use href="#i-sculpt"/></svg>Esculpir</button>
         <button class="tab" data-act="tab" data-arg="mesh"><svg class="ic"><use href="#i-mesh"/></svg>Malla</button>
@@ -732,57 +732,19 @@ input[type=color]{border-color:#245173}
       </div>
 
       <!-- ===== ESCANEO YC🪐 ===== -->
-      <div class="tabpane" id="pane-scan">
-        <details class="sec" open><summary>Captura fotogramétrica <em id="scanCount">0</em></summary><div class="body">
-          <p class="note" style="margin-top:0">Captura una vuelta completa alrededor de la pieza. YC🪐 analiza cada foto antes de aceptarla y evita llenar la sesión con imágenes borrosas, oscuras o repetidas.</p>
-          <div class="scan-status">
-            <div><span id="scanQualityDot" class="qdot"></span><b id="scanQuality">Listo para capturar</b></div>
-            <span id="scanRing">Anillo 1 · 0/12</span>
-          </div>
-          <div class="scan-preview-wrap">
-            <video id="scanVideo" playsinline autoplay muted></video>
-            <canvas id="scanOverlay"></canvas>
-            <div class="scan-crosshair"></div>
-            <div class="scan-guide"><span>Coloca la pieza dentro</span><small>distancia constante · sin zoom digital</small></div>
-          </div>
-          <div class="g2">
-            <button class="btn pri" data-act="scanCamera">Activar cámara</button>
-            <button class="btn" data-act="scanCapture">Capturar foto</button>
-          </div>
-          <div class="g2">
-            <button class="btn sm" data-act="scanPick">Agregar fotos</button>
-            <button class="btn sm" data-act="scanClear">Limpiar sesión</button>
-          </div>
-          <input type="file" id="scanFiles" accept="image/*" multiple capture="environment" style="display:none">
-        </div></details>
-
-        <details class="sec" open><summary>Guía de cobertura</summary><div class="body">
-          <div class="scan-rings">
-            <div class="scan-ring"><span>1</span><b>Frontal</b><small>12 vistas</small></div>
-            <div class="scan-ring"><span>2</span><b>Media</b><small>12 vistas</small></div>
-            <div class="scan-ring"><span>3</span><b>Superior</b><small>12 vistas</small></div>
-          </div>
-          <div class="scan-meter"><i id="scanMeter"></i></div>
-          <p class="note">Meta recomendada: 36 fotos con 25–40% de solape entre vistas. Para una pieza pequeña, gira la pieza o camina alrededor de ella manteniendo la cámara a la misma distancia.</p>
-        </div></details>
-
-        <details class="sec"><summary>Diagnóstico de captura</summary><div class="body">
-          <div class="scan-stats">
-            <div><span>Fotos válidas</span><b id="scanGood">0</b></div>
-            <div><span>Fotos descartadas</span><b id="scanBad">0</b></div>
-            <div><span>Calidad media</span><b id="scanAvg">—</b></div>
-            <div><span>Sesión</span><b id="scanSession">Nueva</b></div>
-          </div>
-          <div id="scanLog" class="scan-log"></div>
-        </div></details>
-
-        <details class="sec"><summary>Reconstrucción</summary><div class="body">
-          <button class="btn pri" data-act="scanPrepare">Preparar reconstrucción</button>
-          <button class="btn sm" data-act="scanWebSfm" style="margin-top:7px">Abrir SfM WebGPU</button>
-          <p class="note">“Preparar” guarda la sesión y crea el manifiesto local. El botón SfM abre una implementación experimental de Structure-from-Motion que corre en Chrome/WebGPU. La reconstrucción completa todavía requiere una etapa específica de SfM/MVS.</p>
-          <div id="scanManifest" class="note" style="display:none"></div>
-        </div></details>
-      </div>
+      <div class="tabpane" id="pane-soon">
+  <details class="sec" open><summary>🚧 Próximamente</summary><div class="body">
+    <div style="padding:12px 4px;text-align:center">
+      <div style="font-size:36px;margin-bottom:10px">📷</div>
+      <h3 style="margin:0 0 8px;color:#e5b44d">Escáner 3D</h3>
+      <p class="note" style="line-height:1.55">La función de escaneo por cámara está en desarrollo. La dejamos temporalmente fuera de la interfaz principal para que Scaner3D mantenga una experiencia limpia y estable.</p>
+      <div class="scan-status"><div><span class="qdot warn"></span><b>En desarrollo</b></div><span>Próximamente</span></div>
+    </div>
+  </div></details>
+  <details class="sec"><summary>Lo que llegará</summary><div class="body">
+    <p class="note">Captura de fotografías, organización de la sesión, preparación del conjunto de imágenes y reconstrucción 3D.</p>
+  </div></details>
+</div>
 
       <!-- ===== IA ===== -->
       <div class="tabpane" id="pane-ai">
