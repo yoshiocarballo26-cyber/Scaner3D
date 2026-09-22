@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  YC Editor 3D — Speed3Dental
+  Scaner3D
   © 2026 Yoshio Carballo. Todos los derechos reservados.
   Editor 3D web para diseñar piezas imprimibles (figuras, autos de colección, accesorios).
 -->
@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>YC Editor 3D — Diseño para impresión 3D</title>
+<title>Scaner3D — Diseño y escaneo 3D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -205,7 +205,7 @@ table.keys td:first-child{font:12px var(--mono);color:var(--acc);white-space:now
 
 <div id="app">
   <header id="topbar">
-    <div class="brand"><i>YC</i>Editor 3D <span>· diseño para impresión</span></div>
+    <div class="brand"><i>S3D</i>Scaner3D <span>· diseño y escaneo 3D</span></div>
 
     <div class="menu"><button class="menu-btn">Archivo</button><div class="menu-list">
       <button class="mi" data-act="newProject">Nuevo proyecto</button>
@@ -2039,7 +2039,7 @@ async function aiAsk() {
   busy(true, 'Consultando…'); aiLog(prompt, 'me');
   try {
     const ctx = exportables(false).slice(0, 25).map((o) => { const b = new THREE.Box3().setFromObject(o, true), s = b.getSize(new THREE.Vector3()); return `${o.name}: ${fmt(s.x, 1)}×${fmt(s.y, 1)}×${fmt(s.z, 1)} mm`; }).join('; ') || 'escena vacía';
-    const sys = 'Eres un asistente experto en modelado 3D para impresión 3D (resina y FDM) dentro del editor YC Editor 3D. Responde en español, breve y práctico, con pasos concretos. Escena actual: ' + ctx + '.';
+    const sys = 'Eres un asistente experto en modelado 3D para impresión 3D (resina y FDM) dentro del editor Scaner3D. Responde en español, breve y práctico, con pasos concretos. Escena actual: ' + ctx + '.';
     aiLog(await callGemini([{ text: prompt }], { system: sys }));
   } catch (err) { aiLog('Error: ' + err.message); showError('IA: ' + err.message); } finally { busy(false); }
 }
@@ -2069,7 +2069,7 @@ const A = {
   measureClear: clearMeasures,
   aiGenerate, aiAsk,
   aiSaveKey() { AI.key = $('aiKey').value.trim(); AI.model = $('aiModel').value.trim() || AI.model; try { localStorage.setItem('yc_ai_key', AI.key); localStorage.setItem('yc_ai_model', AI.model); } catch (_) {} toast('Datos de IA guardados en este navegador', { type: 'ok' }); },
-  contactWA() { window.open(`https://wa.me/${CONTACT_WA}?text=${encodeURIComponent('Hola, quiero el plan completo de YC Editor 3D')}`, '_blank'); },
+  contactWA() { window.open(`https://wa.me/${CONTACT_WA}?text=${encodeURIComponent('Hola, quiero el plan completo de Scaner3D')}`, '_blank'); },
   logout() { fb?.authM.signOut(fb.auth); },
 };
 const closeMenus = () => document.querySelectorAll('.menu.open').forEach((m) => m.classList.remove('open'));
