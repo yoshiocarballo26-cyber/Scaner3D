@@ -841,7 +841,8 @@ input[type=color]{border-color:#245173}
 <script type="importmap">
 { "imports": {
   "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+  "jszip": "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm"
 } }
 </script>
 <script>
@@ -860,6 +861,7 @@ import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
 import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+import JSZip from "jszip";
 import { mergeVertices, mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
@@ -2344,10 +2346,14 @@ function scanClear() {
 function scanPrepare() {
   if(SCAN.photos.length<8) throw new Error('Necesitas al menos 8 fotos válidas. Para una reconstrucción real, apunta a 24–36 o más.');
   const manifest={app:'YC🪐 Editor 3D',version:1,created:new Date().toISOString(),count:SCAN.photos.length,quality:Math.round(SCAN.totalQuality/SCAN.photos.length),files:SCAN.photos.map((p,i)=>({name:'yc3d_'+String(i+1).padStart(3,'0')+'.jpg',quality:p.quality}))};
-  const blob=new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='YC-Scanner-session.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  $('scanManifest').style.display='block'; $('scanManifest').textContent='Sesión preparada: '+manifest.count+' fotos · calidad media '+manifest.quality+'%.';
-  toast('Manifiesto de reconstrucción preparado',{type:'ok'});
+  const zip=new JSZip();
+  zip.file('manifest.json',JSON.stringify(manifest,null,2));
+  const photos=zip.folder('images');
+  SCAN.photos.forEach((p,i)=>photos.file('yc3d_'+String(i+1).padStart(3,'0')+'.jpg',p.blob));
+  const zipBlob=await zip.generateAsync({type:'blob',compression:'STORE'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(zipBlob); a.download='YC-Scanner-dataset.zip'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  $('scanManifest').style.display='block'; $('scanManifest').textContent='Dataset preparado: '+manifest.count+' fotos · calidad media '+manifest.quality+'% · ZIP listo.';
+  toast('Dataset de reconstrucción exportado',{type:'ok'});
 }
 function scanWebSfm(){ window.open('https://websfm.onrender.com/','_blank','noopener'); }
 
