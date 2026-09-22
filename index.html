@@ -861,7 +861,6 @@ import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
 import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
-import JSZip from "jszip";
 import { mergeVertices, mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
@@ -2343,8 +2342,14 @@ function scanClear() {
   const log=$('scanLog'); if(log) log.innerHTML=''; scanUpdate(); $('scanManifest').style.display='none';
   toast('Sesión de escaneo vaciada');
 }
-function scanPrepare() {
+async function scanPrepare() {
   if(SCAN.photos.length<8) throw new Error('Necesitas al menos 8 fotos válidas. Para una reconstrucción real, apunta a 24–36 o más.');
+  let JSZip;
+  try {
+    ({default: JSZip} = await import('jszip'));
+  } catch (e) {
+    throw new Error('No se pudo cargar el módulo ZIP. La captura sigue funcionando, pero vuelve a intentarlo con conexión a internet.');
+  }
   const manifest={app:'YC🪐 Editor 3D',version:1,created:new Date().toISOString(),count:SCAN.photos.length,quality:Math.round(SCAN.totalQuality/SCAN.photos.length),files:SCAN.photos.map((p,i)=>({name:'yc3d_'+String(i+1).padStart(3,'0')+'.jpg',quality:p.quality}))};
   const zip=new JSZip();
   zip.file('manifest.json',JSON.stringify(manifest,null,2));
