@@ -172,6 +172,160 @@ table.keys td:first-child{font:12px var(--mono);color:var(--acc);white-space:now
   #status .hide-s{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ===== YC🪐 EDITOR 3D — rediseño premium ===== */
+:root{
+  --bg:#050b12; --bar:#07111d; --panel:#091624; --panel2:#0c1d2e;
+  --line:#15334e; --line2:#245173; --text:#eaf5ff; --mut:#829bb0;
+  --acc:#d9a441; --acc-ink:#080b0f; --info:#56b9ff; --err:#ff7187; --ok:#63e6a0;
+  --r:9px;
+}
+body{
+  background:
+    radial-gradient(80% 80% at 58% 42%,rgba(20,73,112,.16),transparent 68%),
+    #050b12;
+}
+#app{grid-template-rows:58px 1fr 28px}
+#topbar{
+  height:58px;padding:0 14px;gap:6px;
+  background:linear-gradient(180deg,#081522,#06101b);
+  border-bottom:1px solid #173b5b;
+  box-shadow:0 5px 22px rgba(0,0,0,.28);
+}
+.brand{gap:9px;margin-right:16px;letter-spacing:.1px}
+.brand strong{font-size:15px;font-weight:600;color:#f3f7fb}
+.brand span{font-size:11px}
+.brand .yc-logo{
+  position:relative;width:34px;height:34px;border-radius:10px;
+  display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(circle at 35% 30%,#f0c86a,#a66d16 72%);
+  color:#08111a;border:1px solid #f0c86a;
+  box-shadow:0 0 0 1px rgba(86,185,255,.28),0 0 18px rgba(217,164,65,.22);
+  font:700 10px var(--mono);font-style:normal;
+}
+.brand .yc-logo::after{
+  content:'';position:absolute;width:38px;height:12px;border:1px solid rgba(255,255,255,.82);
+  border-radius:50%;transform:rotate(-18deg);opacity:.75;
+}
+.menu-btn{padding:8px 11px;color:#b7c9d8}
+.menu-btn:hover,.menu.open>.menu-btn{background:#0d2235;color:#fff}
+.ib{color:#7895aa}
+#acct{border-color:#1d4665;background:#081522}
+#acct b{color:#e1b65a}
+#main{grid-template-columns:116px 1fr 356px}
+#toolbar{
+  align-items:stretch;gap:5px;padding:12px 9px;
+  background:linear-gradient(180deg,#071321,#06101a);
+  border-right:1px solid #173b5b;
+}
+.tool{
+  width:100%;height:44px;border-radius:8px;
+  justify-content:flex-start;display:flex;gap:11px;padding:0 11px;
+  color:#7592a9;border:1px solid transparent;
+}
+.tool .ic{width:18px;height:18px}
+.tool::after{
+  font-size:11px;font-weight:500;color:inherit;white-space:nowrap;
+}
+.tool[data-arg="select"]::after{content:'Seleccionar'}
+.tool[data-arg="move"]::after{content:'Mover'}
+.tool[data-arg="rotate"]::after{content:'Rotar'}
+.tool[data-arg="scale"]::after{content:'Escalar'}
+.tool[data-arg="measure"]::after{content:'Medir'}
+.tool[data-arg="sculpt"]::after{content:'Esculpir'}
+.tool[data-arg="cut"]::after{content:'Corte'}
+.tool:hover{background:#0b2032;color:#dcecf8;border-color:#174566}
+.tool.active{
+  background:linear-gradient(90deg,rgba(49,137,201,.34),rgba(13,50,78,.6));
+  color:#62c4ff;border-color:#236a9b;
+  box-shadow:inset 3px 0 0 #56b9ff,0 0 16px rgba(50,145,210,.08);
+}
+.tsep{width:100%;margin:5px 0;background:#173b56}
+#viewport{
+  background:
+    radial-gradient(75% 75% at 52% 38%,rgba(29,91,138,.22),transparent 66%),
+    radial-gradient(45% 35% at 50% 45%,rgba(255,255,255,.035),transparent 72%),
+    #06101a;
+}
+#viewport::before{
+  content:'YC🪐  ·  3D WORKSPACE';
+  position:absolute;left:16px;bottom:15px;z-index:2;
+  font:500 9px var(--mono);letter-spacing:1.8px;color:rgba(116,177,214,.34);
+  pointer-events:none;
+}
+#hint{
+  left:16px;top:16px;max-width:52%;
+  background:rgba(4,12,20,.78);border:1px solid #1b4666;
+  color:#8ca8bb;backdrop-filter:blur(8px);
+}
+#viewbar{
+  right:16px;top:16px;padding:4px;
+  background:rgba(5,15,24,.82);border:1px solid #1d4868;
+  box-shadow:0 8px 28px rgba(0,0,0,.3);
+}
+#viewbar button{color:#83a4ba}
+#viewbar button:hover{background:#10273b;color:#fff}
+#viewbar button.on{color:#e1b65a}
+#camPanel{right:16px;top:61px;background:#0b1c2b;border-color:#245173}
+#side{
+  background:linear-gradient(180deg,#091624,#07121e);
+  border-left:1px solid #173b5b;
+}
+#tabs{
+  background:#07121e;border-bottom:1px solid #173b5b;
+}
+.tab{padding:8px 0 7px;color:#7190a7;font-size:10px}
+.tab.active{
+  color:#5fc2ff;border-bottom-color:#56b9ff;background:rgba(44,135,196,.09)
+}
+.tabpane{padding:11px 11px 32px}
+.sec{
+  border-color:#173c59;background:linear-gradient(180deg,#0d2031,#0b1a29);
+  box-shadow:0 4px 15px rgba(0,0,0,.12);
+}
+.sec>summary{color:#d8e8f3}
+.sec>summary::before{border-color:#6d8da4}
+.lab{color:#7895aa}
+.btn{
+  background:#091725;border-color:#214a69;color:#bdd0dc;
+}
+.btn:hover{border-color:#56b9ff;color:#70c9ff;background:#0c2133}
+.btn.pri{
+  background:linear-gradient(135deg,#d9a441,#b98324);
+  border-color:#e0b45b;color:#111;
+  box-shadow:0 4px 15px rgba(217,164,65,.12);
+}
+.btn.on{border-color:#d9a441;color:#e2b85d;background:rgba(217,164,65,.08)}
+input[type=number],input[type=text],input[type=password],input[type=email],select,textarea{
+  background:#050e17;border-color:#204762;color:#e5f0f7;
+}
+input:focus,select:focus,textarea:focus{border-color:#56b9ff;box-shadow:0 0 0 2px rgba(86,185,255,.08)}
+input[type=range]{accent-color:#56b9ff}
+input[type=color]{border-color:#245173}
+#objList .orow{background:#06111b;border-color:transparent}
+#objList .orow.sel{border-color:#d9a441;background:rgba(217,164,65,.08)}
+#status{
+  background:#06111b;border-top-color:#173b5b;color:#6f8da2;
+}
+#status b{color:#56b9ff}
+.modal{background:rgba(2,7,12,.82)}
+.card{background:#0a1927;border-color:#245173;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.toast{background:#0c1d2c;border-color:#285777}
+.menu-list{background:#0b1c2b;border-color:#245173}
+.mi:hover{background:rgba(86,185,255,.10)}
+.mi kbd{color:#6f8da2}
+#aiLog div{background:#06111b}
+#aiLog .me{background:rgba(217,164,65,.09)}
+@media (max-width:900px){
+  #app{grid-template-rows:52px 1fr 26px}
+  #topbar{height:52px;padding:0 9px}
+  #main{grid-template-columns:52px 1fr}
+  #toolbar{padding:8px 6px;align-items:center}
+  .tool{width:40px;height:40px;justify-content:center;padding:0}
+  .tool::after{display:none}
+  #hint{top:56px}
+}
+
 </style>
 </head>
 <body>
@@ -205,7 +359,7 @@ table.keys td:first-child{font:12px var(--mono);color:var(--acc);white-space:now
 
 <div id="app">
   <header id="topbar">
-    <div class="brand"><i>S3D</i>Scaner3D <span>· diseño y escaneo 3D</span></div>
+    <div class="brand"><i class="yc-logo">YC🪐</i><strong>YC🪐 Editor 3D</strong> <span>· diseño y escaneo 3D</span></div>
 
     <div class="menu"><button class="menu-btn">Archivo</button><div class="menu-list">
       <button class="mi" data-act="newProject">Nuevo proyecto</button>
