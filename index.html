@@ -545,6 +545,9 @@ input[type=color]{border-color:#245173}
             <select id="alignMode"><option value="min">Tocar lado −</option><option value="center">Centrar</option><option value="max">Tocar lado +</option></select>
           </div>
           <button class="btn sm" data-act="alignTo">Alinear pieza seleccionada</button>
+          <label class="chk"><input type="checkbox" id="surfaceSnapOn">Imán de superficie al soltar</label>
+          <div class="row"><input type="number" id="surfaceSnapDist" value="3" step="0.5" min="0.1"><button class="btn sm" data-act="surfaceSnapNow">Imán de superficie ahora</button></div>
+          <p class="note">Busca una superficie real de otra pieza y acerca el punto más próximo hasta tocarla.</p>
           <p class="note">Mueve la pieza seleccionada hasta tocar (o centrarse con) la pieza elegida arriba, en el eje indicado. Útil para armar piezas por separado (ej. rueda contra chasis).</p>
         </div></details>
 
@@ -659,7 +662,7 @@ input[type=color]{border-color:#245173}
           <input type="range" id="cutPos" min="0" max="100" step="0.1" value="0">
           <input type="number" id="cutPosNum" step="0.1" value="0">
           <label class="chk"><input type="checkbox" id="cutCap" checked>Tapar el corte (pieza cerrada)</label>
-          <label class="chk"><input type="checkbox" id="xraySection">Vista de rayos-X (no corta, solo para inspeccionar por dentro)</label>
+          <label class="chk"><input type="checkbox" id="xraySection">Vista de rayos-X (inspeccionar interior)</label>
           <div class="g2"><button class="btn pri" data-act="cutApply">Aplicar corte</button><button class="btn" data-act="cutBelow">Cortar bajo la plataforma</button></div>
           <p class="note">El plano naranja muestra dónde corta. “Tapar” usa operaciones booleanas y necesita una malla cerrada; sin tapar corta cualquier malla y deja el corte abierto. La vista de rayos-X usa este mismo plano solo para ver el interior (por ejemplo, después de vaciar), sin modificar la pieza.</p>
         </div></details>
@@ -695,6 +698,12 @@ input[type=color]{border-color:#245173}
           <button class="btn sm" style="margin-top:6px" data-act="drainHole">Agregar agujero de drenado</button>
           <p class="note">Crea una cavidad interior a esa distancia de la superficie y resta el material sobrante: ahorra resina/filamento y reduce presión interna al curar. Necesita malla cerrada (revisa “Malla” en el panel Medir); en formas muy cóncavas el resultado puede no quedar perfecto — vuelve a revisar con la Regla antes de imprimir.</p>
           <p class="note">El agujero de drenado crea un cilindro rojo que puedes mover, rotar y escalar (como la caja de corte); cuando atraviese la pared, usa “Restar de la pieza” arriba (Caja de corte) para aplicarlo. Deja salir la resina o el polvo atrapado dentro de una pieza vaciada.</p>
+        </div></details>
+
+        <details class="sec" open><summary>Diagnóstico de malla</summary><div class="body">
+          <button class="btn sm pri" data-act="meshDiagnostics">Analizar pieza seleccionada</button>
+          <div id="meshDiag" class="note" style="margin-top:8px">Selecciona una pieza y pulsa Analizar.</div>
+          <p class="note">Comprueba geometría válida, triángulos degenerados, vértices repetidos, bordes abiertos/no-manifold, volumen y cierre. No modifica la pieza.</p>
         </div></details>
 
         <details class="sec"><summary>Reparar y optimizar</summary><div class="body">
@@ -1283,6 +1292,20 @@ function applySnap() {
   transform.setRotationSnap(S.snap ? rad(S.snapDeg) : null);
   transform.setScaleSnap(S.snap ? 0.05 : null);
 }
+function surfaceSnapSelected() {
+  const o=needMesh(); if(!o)return false;
+  const maxDist=clamp(num('surfaceSnapDist',3),0.1,20);
+  const targets=objects.filter(x=>x!==o&&x.visible&&!x.userData.isReference&&x.userData.kind!=='cutter');
+  if(!targets.length){toast('Necesitas otra pieza visible.',{type:'warn'});return false;}
+  o.updateMatrixWorld(true);
+  const src=o.geometry.attributes.position,stride=Math.max(1,Math.ceil(src.count/500)),pts=[],p=new THREE.Vector3();
+  for(let i=0;i<src.count;i+=stride)pts.push(p.fromBufferAttribute(src,i).clone().applyMatrix4(o.matrixWorld));
+  const dirs=[new THREE.Vector3(1,0,0),new THREE.Vector3(-1,0,0),new THREE.Vector3(0,1,0),new THREE.Vector3(0,-1,0),new THREE.Vector3(0,0,1),new THREE.Vector3(0,0,-1)];
+  const rc=new THREE.Raycaster();let best=null;
+  for(const point of pts)for(const d of dirs){rc.set(point.clone().addScaledVector(d,0.02),d);rc.near=0;rc.far=maxDist;const hits=rc.intersectObjects(targets,false);if(hits.length&&(!best||hits[0].distance<best.distance))best={distance:hits[0].distance,point,hit:hits[0].point.clone()};}
+  if(!best){toast('No encontré una superficie dentro de '+fmt(maxDist,1)+' mm.',{type:'warn'});return false;}
+  pushUndo();o.position.add(best.hit.sub(best.point));onTransformEnd();toast('Imán de superficie aplicado · '+fmt(best.distance,2)+' mm',{type:'ok'});return true;
+}
 let dragState = null;
 transform.addEventListener('dragging-changed', (e) => {
   orbit.enabled = !e.value;
@@ -1290,6 +1313,7 @@ transform.addEventListener('dragging-changed', (e) => {
     pushUndo();
     dragState = selected ? { p: selected.position.clone(), q: selected.quaternion.clone(), s: selected.scale.clone() } : null;
   } else {
+    if (dragState && selected && $('surfaceSnapOn')?.checked && selected.userData.kind !== 'cutter') surfaceSnapSelected();
     if (dragState && selected && selected.position.equals(dragState.p) && selected.quaternion.equals(dragState.q) && selected.scale.equals(dragState.s)) {
       undoStack.pop(); syncHistoryUI();                  // clic sin mover: no deja paso vacío en el historial
     } else onTransformEnd();
@@ -1935,15 +1959,15 @@ function isWatertight(g) {
   let bad = 0; map.forEach((v) => { if (v !== 2) bad++; });
   return { ok: bad === 0, bad };
 }
-function checkWatertight(o) {
-  const g = o.geometry;
-  if (watertightCache.has(g)) return watertightCache.get(g);
-  let res;
-  try {
-    if (triCount(g) > 400000) res = { ok: null, bad: 0 };          // malla muy grande: no se evalúa (costaría demasiado)
-    else res = isWatertight(g.userData.welded ? g : weldedCopy(g, 1e-4));
-  } catch (_) { res = { ok: null, bad: 0 }; }
-  watertightCache.set(g, res); return res;
+function checkWatertight(o){const g=o.geometry;if(watertightCache.has(g))return watertightCache.get(g);let res;try{if(triCount(g)>400000)res={ok:null,bad:0};else res=isWatertight(g.userData.welded?g:weldedCopy(g,1e-4));}catch(_){res={ok:null,bad:0};}watertightCache.set(g,res);return res;}
+function runMeshDiagnostics(){
+ const o=needMesh();if(!o)return;const g=o.geometry,p=g.attributes.position,idx=g.index,n=idx?idx.count:p.count;let finite=true,deg=0;
+ const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();
+ for(let i=0;i<n;i+=3){const i0=idx?idx.getX(i):i,i1=idx?idx.getX(i+1):i+1,i2=idx?idx.getX(i+2):i+2;a.fromBufferAttribute(p,i0);b.fromBufferAttribute(p,i1);c.fromBufferAttribute(p,i2);if(![a.x,a.y,a.z,b.x,b.y,b.z,c.x,c.y,c.z].every(Number.isFinite)){finite=false;continue;}if(b.clone().sub(a).cross(c.clone().sub(a)).lengthSq()<1e-12)deg++;}
+ let weldedCount=p.count;try{weldedCount=weldedCopy(g,1e-4).attributes.position.count;}catch(_){}
+ const dup=Math.max(0,p.count-weldedCount),wt=checkWatertight(o),vol=meshVolume(o),box=new THREE.Box3().setFromObject(o,true),sz=box.getSize(new THREE.Vector3()),ready=finite&&deg===0&&dup===0&&wt.ok===true,el=$('meshDiag');if(!el)return;
+ el.innerHTML='<b style="color:'+(ready?'var(--ok)':'var(--err)')+'">'+(ready?'✓ MALLA LISTA':'⚠ REVISAR')+'</b><div class="kv"><span>Triángulos</span><span>'+Math.round(triCount(g)).toLocaleString('es')+'</span></div><div class="kv"><span>Geometría válida</span><span>'+(finite?'Sí ✓':'No ✕')+'</span></div><div class="kv"><span>Degenerados</span><span>'+deg+'</span></div><div class="kv"><span>Vértices repetidos</span><span>'+dup+'</span></div><div class="kv"><span>Malla cerrada</span><span>'+(wt.ok===true?'Sí ✓':wt.ok===false?'No ✕ ('+wt.bad+' bordes)':'No evaluada')+'</span></div><div class="kv"><span>Volumen</span><span>'+(Number.isFinite(vol)?fmt(vol/1000,2)+' cm³':'No disponible')+'</span></div><div class="kv"><span>Tamaño</span><span>'+fmt(sz.x,1)+' × '+fmt(sz.y,1)+' × '+fmt(sz.z,1)+' mm</span></div>';
+ toast(ready?'Diagnóstico: malla lista para revisión final.':'Diagnóstico: hay puntos que revisar.',{type:ready?'ok':'warn'});
 }
 
 /* ---- colocar, espejo, patrones ---- */
@@ -2091,15 +2115,15 @@ cutPlane.add(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMa
   new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(1, 1)), new THREE.LineBasicMaterial({ color: ACCENT })));
 cutPlane.visible = false; scene.add(cutPlane);
 let xrayMat = null;
-function updateXraySection() {
-  const want = !!($('xraySection')?.checked) && selected && !selected.userData.isReference;
-  if (xrayMat && xrayMat !== (want ? selected.material : null)) { xrayMat.clippingPlanes = null; xrayMat = null; requestRender(); }
-  if (!want) return;
-  renderer.localClippingEnabled = true;
-  const ai = AXI[$('cutAxis').value], c = num('cutPosNum', 0);
-  const normal = new THREE.Vector3(); normal.setComponent(ai, 1);
-  selected.material.clippingPlanes = [new THREE.Plane(normal, -c)];
-  xrayMat = selected.material; requestRender();
+const xrayState=new WeakMap();
+function updateXraySection(){
+  const want=!!($('xraySection')?.checked)&&selected&&!selected.userData.isReference&&selected.userData.kind!=='cutter';
+  if(xrayMat&&(!want||xrayMat!==selected?.material)){const s=xrayState.get(xrayMat);if(s){xrayMat.transparent=s.transparent;xrayMat.opacity=s.opacity;xrayMat.depthWrite=s.depthWrite;xrayMat.side=s.side;}xrayMat.clippingPlanes=null;xrayMat.needsUpdate=true;xrayMat=null;}
+  if(!want){renderer.localClippingEnabled=false;requestRender();return;}
+  const mat=selected.material;if(!xrayState.has(mat))xrayState.set(mat,{transparent:!!mat.transparent,opacity:mat.opacity,depthWrite:mat.depthWrite,side:mat.side});
+  renderer.localClippingEnabled=true;mat.transparent=true;mat.opacity=.22;mat.depthWrite=false;mat.side=THREE.DoubleSide;
+  const ai=AXI[$('cutAxis').value],cc=num('cutPosNum',0),normal=new THREE.Vector3();normal.setComponent(ai,1);
+  mat.clippingPlanes=[new THREE.Plane(normal,-cc)];mat.needsUpdate=true;xrayMat=mat;requestRender();
 }
 function updateCutRange() {
   const r = $('cutPos'), n = $('cutPosNum'); if (!r || !n || !selected || selBox.isEmpty()) return;
@@ -2504,6 +2528,8 @@ function wireControls() {
   on('snapOn', 'change', (e) => { S.snap = e.target.checked; applySnap(); });
   on('snapMm', 'change', (e) => { S.snapMm = Math.max(0.1, +e.target.value || 1); applySnap(); });
   on('snapDeg', 'change', (e) => { S.snapDeg = Math.max(1, +e.target.value || 15); applySnap(); });
+  on('surfaceSnapDist','change',e=>{e.target.value=clamp(+e.target.value||3,0.1,20);});
+  on('xraySection','change',updateXraySection);
 
   on('matColor', 'click', () => selected && pushUndo());
   on('matColor', 'input', (e) => useMat((m) => m.color.set(e.target.value)));
