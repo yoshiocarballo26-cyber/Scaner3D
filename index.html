@@ -659,8 +659,9 @@ input[type=color]{border-color:#245173}
           <input type="range" id="cutPos" min="0" max="100" step="0.1" value="0">
           <input type="number" id="cutPosNum" step="0.1" value="0">
           <label class="chk"><input type="checkbox" id="cutCap" checked>Tapar el corte (pieza cerrada)</label>
+          <label class="chk"><input type="checkbox" id="xraySection">Vista de rayos-X (no corta, solo para inspeccionar por dentro)</label>
           <div class="g2"><button class="btn pri" data-act="cutApply">Aplicar corte</button><button class="btn" data-act="cutBelow">Cortar bajo la plataforma</button></div>
-          <p class="note">El plano naranja muestra dónde corta. “Tapar” usa operaciones booleanas y necesita una malla cerrada; sin tapar corta cualquier malla y deja el corte abierto.</p>
+          <p class="note">El plano naranja muestra dónde corta. “Tapar” usa operaciones booleanas y necesita una malla cerrada; sin tapar corta cualquier malla y deja el corte abierto. La vista de rayos-X usa este mismo plano solo para ver el interior (por ejemplo, después de vaciar), sin modificar la pieza.</p>
         </div></details>
 
         <details class="sec"><summary>Caja de corte (borrar sobrantes)</summary><div class="body">
@@ -680,11 +681,20 @@ input[type=color]{border-color:#245173}
           </div>
         </div></details>
 
+        <details class="sec"><summary>Redondear bordes</summary><div class="body">
+          <span class="lab" style="margin-top:0">Nivel de redondeo (1 suave — 5 fuerte)</span>
+          <input type="range" id="roundAmount" min="1" max="5" step="1" value="2">
+          <button class="btn sm pri" style="margin-top:8px" data-act="roundEdges">Redondear pieza seleccionada</button>
+          <p class="note">Suaviza toda la pieza de forma pareja (no es un fillet exacto por arista con radio en mm) — pensado para quitar lo anguloso de figuras y accesorios. En niveles altos puede perder detalle fino; usa Deshacer si el resultado es demasiado.</p>
+        </div></details>
+
         <details class="sec"><summary>Vaciar (ahuecar)</summary><div class="body">
           <span class="lab" style="margin-top:0">Grosor de pared (mm)</span>
           <input type="number" id="hollowWall" value="2" min="0.4" step="0.2">
           <button class="btn sm pri" style="margin-top:8px" data-act="hollow">Vaciar pieza seleccionada</button>
+          <button class="btn sm" style="margin-top:6px" data-act="drainHole">Agregar agujero de drenado</button>
           <p class="note">Crea una cavidad interior a esa distancia de la superficie y resta el material sobrante: ahorra resina/filamento y reduce presión interna al curar. Necesita malla cerrada (revisa “Malla” en el panel Medir); en formas muy cóncavas el resultado puede no quedar perfecto — vuelve a revisar con la Regla antes de imprimir.</p>
+          <p class="note">El agujero de drenado crea un cilindro rojo que puedes mover, rotar y escalar (como la caja de corte); cuando atraviese la pared, usa “Restar de la pieza” arriba (Caja de corte) para aplicarlo. Deja salir la resina o el polvo atrapado dentro de una pieza vaciada.</p>
         </div></details>
 
         <details class="sec"><summary>Reparar y optimizar</summary><div class="body">
@@ -1313,7 +1323,7 @@ function updateGizmo() {
 }
 function selectObject(o) {
   selected = o || null;
-  updateGizmo(); preciseBox(); syncTransformUI(); syncMaterialUI(); updateInfo(); updateCutRange(); refreshList(); updateCutPreview(); requestRender();
+  updateGizmo(); preciseBox(); syncTransformUI(); syncMaterialUI(); updateInfo(); updateCutRange(); refreshList(); updateCutPreview(); updateXraySection(); requestRender();
 }
 const deselect = () => selectObject(null);
 
@@ -1852,6 +1862,32 @@ async function simplifySelected() {
   } catch (err) { showError('No se pudo simplificar: ' + err.message); } finally { busy(false); }
 }
 
+async function roundEdgesSelected() {
+  const o = needMesh(); if (!o) return;
+  const level = clamp(Math.round(num('roundAmount', 2)), 1, 5);
+  busy(true, 'Redondeando…'); await tick();
+  try {
+    let g = o.geometry.userData.welded ? o.geometry.clone() : weldedCopy(o.geometry);
+    g.userData = { welded: true };
+    const subs = level >= 4 ? 2 : level >= 2 ? 1 : 0;                // más nivel = más subdivisión, con tope de triángulos
+    for (let i = 0; i < subs; i++) {
+      if (triCount(g) * 4 > 300000) break;
+      g = subdivideGeometry(g);
+    }
+    const nb = getAdjacency(g), P = g.attributes.position.array, n = P.length / 3, tmp = new Float32Array(P.length);
+    const pass = (lam) => {
+      for (let i = 0; i < n; i++) {
+        const l = nb[i]; if (!l.length) { tmp[3 * i] = P[3 * i]; tmp[3 * i + 1] = P[3 * i + 1]; tmp[3 * i + 2] = P[3 * i + 2]; continue; }
+        let sx = 0, sy = 0, sz = 0; for (const j of l) { sx += P[3 * j]; sy += P[3 * j + 1]; sz += P[3 * j + 2]; }
+        const inv = 1 / l.length; tmp[3 * i] = P[3 * i] + lam * (sx * inv - P[3 * i]); tmp[3 * i + 1] = P[3 * i + 1] + lam * (sy * inv - P[3 * i + 1]); tmp[3 * i + 2] = P[3 * i + 2] + lam * (sz * inv - P[3 * i + 2]);
+      }
+      P.set(tmp);
+    };
+    for (let it = 0; it < level; it++) { pass(0.5); pass(-0.53); }   // Taubin: redondea sin encoger la pieza
+    g.attributes.position.needsUpdate = true; g.computeVertexNormals();
+    replaceGeometry(o, g); toast('Bordes redondeados (nivel ' + level + ')', { type: 'ok' });
+  } catch (err) { showError('No se pudo redondear: ' + err.message); } finally { busy(false); }
+}
 async function hollowSelected() {
   const o = needMesh(); if (!o) return;
   const wall = clamp(num('hollowWall', 2), 0.4, 50);
@@ -2009,6 +2045,17 @@ function addCutter() {
   m.name = uniqueName('Caja_de_corte'); m.userData.kind = 'cutter'; if (base) selBox.getCenter(m.position);
   addObject(m); setTool('move'); toast('Mueve y escala la caja sobre lo que sobra; luego pulsa “Restar de la pieza”.', { ms: 5500 });
 }
+function addDrainHole() {
+  const base = selected && !selected.userData.isReference && !selBox.isEmpty();
+  const sz = base ? selBox.getSize(new THREE.Vector3()) : new THREE.Vector3(30, 30, 30);
+  const d = clamp(Math.max(sz.x, sz.y, sz.z) * 0.05, 1.5, 6), len = Math.max(sz.x, sz.y, sz.z) * 1.4 + 10;
+  pushUndo();
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(d / 2, d / 2, len, 24), new THREE.MeshStandardMaterial({ color: 0xff4d6d, transparent: true, opacity: 0.4, depthWrite: false }));
+  m.name = uniqueName('Agujero_drenado'); m.userData.kind = 'cutter';
+  if (base) selBox.getCenter(m.position);
+  addObject(m); setTool('move');
+  toast('Mueve y rota el cilindro para que atraviese la pared; luego pulsa “Restar de la pieza” (arriba, Caja de corte).', { ms: 6500 });
+}
 async function applyCutters() {
   const target = selected, cutters = objects.filter((o) => o.userData.kind === 'cutter' && o.visible);
   if (!target || target.userData.isReference || target.userData.kind === 'cutter') return toast('Selecciona la pieza a recortar (no la caja)', { type: 'warn' });
@@ -2043,6 +2090,17 @@ const cutPlane = new THREE.Group();
 cutPlane.add(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false })),
   new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(1, 1)), new THREE.LineBasicMaterial({ color: ACCENT })));
 cutPlane.visible = false; scene.add(cutPlane);
+let xrayMat = null;
+function updateXraySection() {
+  const want = !!($('xraySection')?.checked) && selected && !selected.userData.isReference;
+  if (xrayMat && xrayMat !== (want ? selected.material : null)) { xrayMat.clippingPlanes = null; xrayMat = null; requestRender(); }
+  if (!want) return;
+  renderer.localClippingEnabled = true;
+  const ai = AXI[$('cutAxis').value], c = num('cutPosNum', 0);
+  const normal = new THREE.Vector3(); normal.setComponent(ai, 1);
+  selected.material.clippingPlanes = [new THREE.Plane(normal, -c)];
+  xrayMat = selected.material; requestRender();
+}
 function updateCutRange() {
   const r = $('cutPos'), n = $('cutPosNum'); if (!r || !n || !selected || selBox.isEmpty()) return;
   const i = AXI[$('cutAxis').value], mn = selBox.min.getComponent(i), mx = selBox.max.getComponent(i);
@@ -2385,9 +2443,9 @@ const A = {
   subdivide: subdivideSelected, weld: weldSelected, flip: flipSelected, bakeScale: bakeScaleSelected, smoothMesh: smoothSelected, simplify: simplifySelected,
   cutApply() { return doCut(selected, $('cutAxis').value, num('cutPosNum', 0), $('cutSide').value, $('cutCap').checked); },
   cutBelow() { return doCut(selected, 'y', 0, 'pos', $('cutCap').checked); },
-  cutterBox: addCutter, cutBoxApply: applyCutters, cutBoxClear: clearCutters,
+  cutterBox: addCutter, cutBoxApply: applyCutters, cutBoxClear: clearCutters, drainHole: addDrainHole,
   boolUnion: () => boolOp('union'), boolSub: () => boolOp('sub'), boolInter: () => boolOp('inter'), boolMerge: () => boolOp('merge'),
-  hollow: hollowSelected,
+  hollow: hollowSelected, roundEdges: roundEdgesSelected,
   measureClear: clearMeasures, measureMode: (a) => setMeasureMode(a),
   aiGenerate, aiAsk,
   aiSaveKey() { AI.key = $('aiKey').value.trim(); AI.model = $('aiModel').value.trim() || AI.model; try { localStorage.setItem('yc_ai_key', AI.key); localStorage.setItem('yc_ai_model', AI.model); } catch (_) {} toast('Datos de IA guardados en este navegador', { type: 'ok' }); },
@@ -2475,9 +2533,10 @@ function wireControls() {
   on('tPlate', 'change', (e) => { S.plate.grid = e.target.checked; buildPlate(); });
   on('tVol', 'change', (e) => { S.plate.vol = e.target.checked; buildPlate(); });
 
-  on('cutAxis', 'change', () => { updateCutRange(); updateCutPreview(); });
-  on('cutPos', 'input', (e) => { $('cutPosNum').value = +(+e.target.value).toFixed(2); updateCutPreview(); });
-  on('cutPosNum', 'change', (e) => { const v = parseFloat(e.target.value); if (Number.isFinite(v)) { $('cutPos').value = v; updateCutPreview(); } });
+  on('cutAxis', 'change', () => { updateCutRange(); updateCutPreview(); updateXraySection(); });
+  on('cutPos', 'input', (e) => { $('cutPosNum').value = +(+e.target.value).toFixed(2); updateCutPreview(); updateXraySection(); });
+  on('cutPosNum', 'change', (e) => { const v = parseFloat(e.target.value); if (Number.isFinite(v)) { $('cutPos').value = v; updateCutPreview(); updateXraySection(); } });
+  on('xraySection', 'change', updateXraySection);
 
   on('fileImport', 'change', (e) => { [...e.target.files].forEach(importFile); e.target.value = ''; });
   on('fileProject', 'change', (e) => { [...e.target.files].forEach(importFile); e.target.value = ''; });
