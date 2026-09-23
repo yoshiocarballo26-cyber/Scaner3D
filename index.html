@@ -8,7 +8,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Scaner3D — Diseño y escaneo 3D</title>
+<title>Scaner3D — Editor 3D para impresión</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -206,30 +206,6 @@ input[type=range],input[type=checkbox]{accent-color:#36a9ff}.orow{background:#06
 .card{background:linear-gradient(180deg,#0c2031,#06111d);border-color:#2a5f82}.toast{background:#0a1d2d;border-color:#285a79}
 @media(max-width:900px){#main{grid-template-columns:52px 1fr}#toolbar{padding:10px 6px}.tool{padding:0;justify-content:center}.tool::after{display:none}}
 
-/* ===== YC🪐 SCANNER ===== */
-.scan-tab{position:relative}
-.scan-tab::after{content:'';position:absolute;right:7px;top:7px;width:5px;height:5px;border-radius:50%;background:#d9a441;box-shadow:0 0 8px rgba(217,164,65,.7)}
-.scan-status{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;margin-bottom:9px;border:1px solid #173c59;border-radius:8px;background:#06111b;font-size:10px;color:#8da9bc}
-.scan-status>div{display:flex;align-items:center;gap:7px}.qdot{width:7px;height:7px;border-radius:50%;background:#62d98b;box-shadow:0 0 8px rgba(98,217,139,.7)}.qdot.bad{background:#ff7187;box-shadow:0 0 8px rgba(255,113,135,.7)}.qdot.warn{background:#d9a441;box-shadow:0 0 8px rgba(217,164,65,.7)}
-.scan-preview-wrap{position:relative;overflow:hidden;border:1px solid #245173;border-radius:9px;background:#02070b;aspect-ratio:4/3;margin-bottom:9px}
-#scanVideo{width:100%;height:100%;object-fit:cover;display:block;background:#02070b}
-#scanOverlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.scan-crosshair{position:absolute;inset:13%;border:1px dashed rgba(86,185,255,.58);border-radius:18px;box-shadow:0 0 0 999px rgba(2,8,14,.14)}
-.scan-guide{position:absolute;left:0;right:0;bottom:7px;text-align:center;color:#d8eaf5;text-shadow:0 1px 4px #000;font-size:10px}
-.scan-guide small{display:block;color:#9ab1c0;margin-top:2px;font-size:8px}
-.scan-rings{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.scan-ring{padding:8px 4px;text-align:center;border:1px solid #173c59;border-radius:8px;background:#06111b}
-.scan-ring span{display:grid;place-items:center;width:20px;height:20px;margin:0 auto 4px;border-radius:50%;background:#102a40;color:#7fcaff;font-weight:700}
-.scan-ring b{display:block;font-size:9px;color:#c6d9e5}.scan-ring small{display:block;margin-top:2px;color:#69879d;font-size:8px}
-.scan-meter{height:5px;margin:9px 0;background:#06101a;border-radius:8px;overflow:hidden;border:1px solid #173c59}
-.scan-meter i{display:block;width:0;height:100%;background:linear-gradient(90deg,#56b9ff,#d9a441);transition:width .25s}
-.scan-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.scan-stats div{padding:7px 8px;border:1px solid #173c59;border-radius:7px;background:#06111b}
-.scan-stats span{display:block;color:#69879d;font-size:8px}.scan-stats b{display:block;margin-top:2px;color:#d8e8f3;font-size:12px}
-.scan-log{max-height:110px;overflow:auto;margin-top:7px;font-size:9px;color:#7995a8}
-.scan-log div{padding:4px 0;border-bottom:1px solid rgba(36,81,115,.35)}
-.scan-log .good{color:#78dda7}.scan-log .bad{color:#ff8a9c}
-
 :root{
   --bg:#050b12; --bar:#07111d; --panel:#091624; --panel2:#0c1d2e;
   --line:#15334e; --line2:#245173; --text:#eaf5ff; --mut:#829bb0;
@@ -415,7 +391,7 @@ input[type=color]{border-color:#245173}
 
 <div id="app">
   <header id="topbar">
-    <div class="brand"><i class="yc-logo">YC🪐</i><strong>YC🪐 Editor 3D</strong> <span>· diseño y escaneo 3D</span></div>
+    <div class="brand"><i class="yc-logo">YC🪐</i><strong>YC🪐 Editor 3D</strong> <span>· diseño y edición para impresión 3D</span></div>
 
     <div class="menu"><button class="menu-btn">Archivo</button><div class="menu-list">
       <button class="mi" data-act="newProject">Nuevo proyecto</button>
@@ -525,7 +501,6 @@ input[type=color]{border-color:#245173}
     <aside id="side">
       <div id="tabs">
         <button class="tab active" data-act="tab" data-arg="obj"><svg class="ic"><use href="#i-layers"/></svg>Objeto</button>
-        <button class="tab" data-act="tab" data-arg="soon"><svg class="ic"><use href="#i-focus"/></svg>Próximamente</button>
         <button class="tab" data-act="tab" data-arg="create"><svg class="ic"><use href="#i-plus"/></svg>Crear</button>
         <button class="tab" data-act="tab" data-arg="sculpt"><svg class="ic"><use href="#i-sculpt"/></svg>Esculpir</button>
         <button class="tab" data-act="tab" data-arg="mesh"><svg class="ic"><use href="#i-mesh"/></svg>Malla</button>
@@ -563,6 +538,14 @@ input[type=color]{border-color:#245173}
           </div>
           <span class="lab">Copia en espejo (plano en el origen)</span>
           <div class="g3"><button class="btn sm" data-act="mirror" data-arg="x">Espejo X</button><button class="btn sm" data-act="mirror" data-arg="y">Espejo Y</button><button class="btn sm" data-act="mirror" data-arg="z">Espejo Z</button></div>
+          <span class="lab">Alinear con otra pieza</span>
+          <select id="alignTarget"></select>
+          <div class="row">
+            <select id="alignAxis"><option value="x">Eje X</option><option value="y">Eje Y</option><option value="z">Eje Z</option></select>
+            <select id="alignMode"><option value="min">Tocar lado −</option><option value="center">Centrar</option><option value="max">Tocar lado +</option></select>
+          </div>
+          <button class="btn sm" data-act="alignTo">Alinear pieza seleccionada</button>
+          <p class="note">Mueve la pieza seleccionada hasta tocar (o centrarse con) la pieza elegida arriba, en el eje indicado. Útil para armar piezas por separado (ej. rueda contra chasis).</p>
         </div></details>
 
         <details class="sec"><summary>Repetir (patrones)</summary><div class="body">
@@ -697,6 +680,13 @@ input[type=color]{border-color:#245173}
           </div>
         </div></details>
 
+        <details class="sec"><summary>Vaciar (ahuecar)</summary><div class="body">
+          <span class="lab" style="margin-top:0">Grosor de pared (mm)</span>
+          <input type="number" id="hollowWall" value="2" min="0.4" step="0.2">
+          <button class="btn sm pri" style="margin-top:8px" data-act="hollow">Vaciar pieza seleccionada</button>
+          <p class="note">Crea una cavidad interior a esa distancia de la superficie y resta el material sobrante: ahorra resina/filamento y reduce presión interna al curar. Necesita malla cerrada (revisa “Malla” en el panel Medir); en formas muy cóncavas el resultado puede no quedar perfecto — vuelve a revisar con la Regla antes de imprimir.</p>
+        </div></details>
+
         <details class="sec"><summary>Reparar y optimizar</summary><div class="body">
           <div class="row"><input type="number" id="weldTol" value="0.01" step="0.01" min="0.0001" title="Tolerancia en mm"><button class="btn sm" data-act="weld">Soldar vértices</button></div>
           <div class="g2"><button class="btn sm" data-act="flip">Invertir normales</button><button class="btn sm" data-act="bakeScale">Fijar escala</button></div>
@@ -710,9 +700,14 @@ input[type=color]{border-color:#245173}
       <div class="tabpane" id="pane-measure">
         <details class="sec" open><summary>Regla</summary><div class="body">
           <button class="btn pri" data-act="tool" data-arg="measure">Activar regla</button>
+          <span class="lab">Modo</span>
+          <div class="g2">
+            <button class="btn sm on" id="mModeDist" data-act="measureMode" data-arg="dist">Distancia</button>
+            <button class="btn sm" id="mModeAngle" data-act="measureMode" data-arg="angle">Ángulo</button>
+          </div>
           <label class="chk"><input type="checkbox" id="mSnap" checked>Imantar al vértice más cercano</label>
           <button class="btn sm" data-act="measureClear">Borrar mediciones</button>
-          <p class="note">Toca dos puntos de la pieza. Cada medida se muestra en mm y cm, con la diferencia en cada eje.</p>
+          <p class="note">Distancia: toca dos puntos. Ángulo: toca el vértice y luego los otros dos puntos. Cada medida se muestra con su valor y una “✕” para borrarla.</p>
         </div></details>
         <details class="sec" open><summary>Medidas de la pieza</summary><div class="body">
           <div class="kv"><span>Ancho (X)</span><span id="mdX">—</span></div>
@@ -720,6 +715,7 @@ input[type=color]{border-color:#245173}
           <div class="kv"><span>Fondo (Z)</span><span id="mdZ">—</span></div>
           <div class="kv"><span>Volumen</span><span id="mdVol">—</span></div>
           <div class="kv"><span>Triángulos</span><span id="mdTris">—</span></div>
+          <div class="kv"><span>Malla</span><span id="mdWater">—</span></div>
           <div class="kv"><span>Plataforma</span><span id="mdFit">—</span></div>
         </div></details>
         <details class="sec"><summary>Plataforma de impresión</summary><div class="body">
@@ -730,21 +726,6 @@ input[type=color]{border-color:#245173}
           <p class="note">Escribe las medidas de tu impresora; la caja se pone roja si la pieza no cabe.</p>
         </div></details>
       </div>
-
-      <!-- ===== ESCANEO YC🪐 ===== -->
-      <div class="tabpane" id="pane-soon">
-  <details class="sec" open><summary>🚧 Próximamente</summary><div class="body">
-    <div style="padding:12px 4px;text-align:center">
-      <div style="font-size:36px;margin-bottom:10px">📷</div>
-      <h3 style="margin:0 0 8px;color:#e5b44d">Escáner 3D</h3>
-      <p class="note" style="line-height:1.55">La función de escaneo por cámara está en desarrollo. La dejamos temporalmente fuera de la interfaz principal para que Scaner3D mantenga una experiencia limpia y estable.</p>
-      <div class="scan-status"><div><span class="qdot warn"></span><b>En desarrollo</b></div><span>Próximamente</span></div>
-    </div>
-  </div></details>
-  <details class="sec"><summary>Lo que llegará</summary><div class="body">
-    <p class="note">Captura de fotografías, organización de la sesión, preparación del conjunto de imágenes y reconstrucción 3D.</p>
-  </div></details>
-</div>
 
       <!-- ===== IA ===== -->
       <div class="tabpane" id="pane-ai">
@@ -780,7 +761,6 @@ input[type=color]{border-color:#245173}
 <input type="file" id="fileGuide" accept=".stl" style="display:none">
 <input type="file" id="fileRef" accept="image/*" style="display:none">
 <input type="file" id="fileProject" accept=".yc3d,.json" style="display:none">
-<input type="file" id="scanFilesHidden" accept="image/*" multiple style="display:none">
 
 <div id="toasts"></div>
 
@@ -812,7 +792,27 @@ input[type=color]{border-color:#245173}
 
 <div class="modal" id="helpModal"><div class="card" style="max-width:560px">
   <h2>Atajos y ayuda</h2>
+
+  <p style="margin:12px 0 4px;font-weight:600;color:var(--text)">Inicio rápido</p>
+  <p class="note" style="margin:0 0 4px">1) Crea una forma o importa un STL guía desde la pestaña “Crear”. 2) Edítala: mover/rotar/escalar, esculpir, cortar o combinar piezas. 3) Revisa el panel “Medir” (tamaño y si la malla está cerrada). 4) Exporta desde Archivo → Exportar.</p>
+
+  <p style="margin:14px 0 4px;font-weight:600;color:var(--text)">Glosario corto</p>
   <table class="keys">
+    <tr><td>Malla cerrada</td><td>La pieza no tiene huecos ni bordes sueltos; se necesita para cortar con “Tapar”, vaciar y hacer booleanas</td></tr>
+    <tr><td>Booleana</td><td>Combinar dos piezas por matemática de volúmenes: unir, restar o intersectar</td></tr>
+    <tr><td>Soldar vértices</td><td>Une puntos que deberían ser el mismo pero quedaron separados; suele arreglar mallas “abiertas”</td></tr>
+    <tr><td>Simplificar</td><td>Reduce triángulos agrupándolos por celdas; baja el detalle para que la pieza sea más ligera</td></tr>
+    <tr><td>Vaciar</td><td>Deja la pieza hueca con una pared de grosor fijo, para ahorrar material</td></tr>
+  </table>
+
+  <p style="margin:14px 0 4px;font-weight:600;color:var(--text)">Problemas comunes</p>
+  <table class="keys">
+    <tr><td>Falla una booleana o vaciar</td><td>Selecciona la pieza, ve a Malla → “Soldar vértices” y vuelve a intentar</td></tr>
+    <tr><td>La pieza sale roja</td><td>No cabe en la plataforma de impresión; ajusta el tamaño o cambia las medidas de la plataforma en “Medir”</td></tr>
+    <tr><td>No pasa nada al exportar</td><td>Revisa el estado de la cuenta arriba a la derecha (prueba/plan) y que haya al menos una pieza visible</td></tr>
+  </table>
+
+  <table class="keys" style="margin-top:14px">
     <tr><td>Q · G · R · S</td><td>Seleccionar, mover, rotar, escalar</td></tr>
     <tr><td>M · B · X</td><td>Regla, pincel de escultura, corte</td></tr>
     <tr><td>1 2 3 4 5 6 0</td><td>Frente, atrás, derecha, izquierda, superior, inferior, isométrica</td></tr>
@@ -835,8 +835,7 @@ input[type=color]{border-color:#245173}
 <script type="importmap">
 { "imports": {
   "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-  "jszip": "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm"
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
 } }
 </script>
 <script>
@@ -1370,13 +1369,19 @@ function doInfo() {
   const set = (id, t) => { const e = $(id); if (e) e.textContent = t; };
   let total = 0; objects.forEach((o) => { total += triCount(o.geometry); });
   const st = $('stScene'); if (st) st.textContent = objects.length + ' piezas · ' + Math.round(total).toLocaleString('es') + ' triángulos';
-  if (!selected) { ['mdX', 'mdY', 'mdZ', 'mdVol', 'mdTris', 'mdFit'].forEach((i) => set(i, '—')); set('sTris', '—'); return; }
+  if (!selected) { ['mdX', 'mdY', 'mdZ', 'mdVol', 'mdTris', 'mdWater', 'mdFit'].forEach((i) => set(i, '—')); set('sTris', '—'); return; }
   const sz = selBox.getSize(new THREE.Vector3());
   const t = (v) => `${fmt(v)} mm · ${fmt(v / 10, 3)} cm`;
   set('mdX', t(sz.x)); set('mdY', t(sz.y)); set('mdZ', t(sz.z));
   const tris = triCount(selected.geometry);
   set('mdTris', Math.round(tris).toLocaleString('es')); set('sTris', Math.round(tris).toLocaleString('es') + ' tri.');
-  if (selected.userData.isReference) { set('mdVol', '—'); set('mdFit', '—'); return; }
+  if (selected.userData.isReference) { set('mdVol', '—'); set('mdWater', '—'); set('mdFit', '—'); return; }
+  const wt = checkWatertight(selected), we = $('mdWater');
+  if (we) {
+    if (wt.ok === null) { we.textContent = 'No evaluada (malla grande)'; we.style.color = 'var(--mut)'; }
+    else if (wt.ok) { we.textContent = 'Cerrada ✓'; we.style.color = 'var(--ok)'; }
+    else { we.textContent = 'Abierta ✕ (' + wt.bad + ' bordes)'; we.style.color = 'var(--err)'; }
+  }
   selected.updateMatrixWorld(true);
   const vol = meshVolume(selected);
   set('mdVol', Number.isFinite(vol) ? `${fmt(vol / 1000, 2)} cm³ (≈ ${fmt(vol / 1000, 1)} ml)` : 'muy pesada');
@@ -1433,7 +1438,7 @@ function refreshList() {
     del.onclick = () => deleteObject(o);
     row.append(vis, lck, nm, del); list.appendChild(row);
   });
-  ['boolA', 'boolB'].forEach((id) => {
+  ['boolA', 'boolB', 'alignTarget'].forEach((id) => {
     const sel = $(id); if (!sel) return; const prev = sel.value; sel.innerHTML = '';
     exportables(false).forEach((o) => { const op = document.createElement('option'); op.value = o.uuid; op.textContent = o.name; sel.appendChild(op); });
     if ([...sel.options].some((x) => x.value === prev)) sel.value = prev;
@@ -1545,11 +1550,19 @@ el.addEventListener('drop', (e) => { e.preventDefault(); [...(e.dataTransfer?.fi
 /* =====================================================================
    10. REGLA (mm y cm)
    ===================================================================== */
-const measures = [], measure = { pending: null, pm: null };
+const measures = [], measure = { pending: null, pm: null, mode: 'dist', pts: null, pms: null };
+function setMeasureMode(m) {
+  cancelPending(); measure.mode = m;
+  $('mModeDist')?.classList.toggle('on', m === 'dist'); $('mModeAngle')?.classList.toggle('on', m === 'angle');
+  setHint(m === 'angle' ? 'Ángulo: toca el vértice y luego los otros dos puntos.' : HINTS.measure);
+}
 const markerGeo = new THREE.SphereGeometry(1, 12, 8), markerMat = new THREE.MeshBasicMaterial({ color: 0xffd166, depthTest: false });
 function addMarker(p) { const m = new THREE.Mesh(markerGeo, markerMat); m.position.copy(p); m.renderOrder = 999; scene.add(m); markerList.push(m); return m; }
 function removeMarker(m) { scene.remove(m); const i = markerList.indexOf(m); if (i >= 0) markerList.splice(i, 1); }
-function cancelPending() { if (measure.pm) { removeMarker(measure.pm); measure.pm = null; } measure.pending = null; }
+function cancelPending() {
+  if (measure.pm) { removeMarker(measure.pm); measure.pm = null; } measure.pending = null;
+  if (measure.pms) { measure.pms.forEach(removeMarker); measure.pms = null; } measure.pts = null;
+}
 function measurePick(e) {
   setMouse(e);
   const t = objects.filter((o) => o.visible && !o.userData.isReference && o.userData.kind !== 'cutter');
@@ -1567,9 +1580,28 @@ function snapVertex(hit) {
 function measureClick(e) {
   const hit = measurePick(e); if (!hit) return;
   const p = $('mSnap').checked ? snapVertex(hit) : hit.point.clone();
+  if (measure.mode === 'angle') {
+    measure.pts = measure.pts || []; measure.pms = measure.pms || [];
+    measure.pts.push(p); measure.pms.push(addMarker(p));
+    if (measure.pts.length === 1) setHint('Vértice fijado. Toca el segundo punto.');
+    else if (measure.pts.length === 2) setHint('Toca el tercer punto.');
+    else { createAngleMeasure(measure.pts[0], measure.pts[1], measure.pts[2], measure.pms); measure.pts = null; measure.pms = null; setHint('Ángulo: toca el vértice y luego los otros dos puntos.'); }
+    requestRender(); return;
+  }
   if (!measure.pending) { measure.pending = p; measure.pm = addMarker(p); setHint('Punto 1 fijado. Toca el segundo punto.'); }
   else { createMeasure(measure.pending, p, measure.pm); measure.pending = null; measure.pm = null; setHint(HINTS.measure); }
   requestRender();
+}
+function createAngleMeasure(v, p2, p3, markers) {
+  const a = p2.clone().sub(v).normalize(), b = p3.clone().sub(v).normalize();
+  const ang = deg(Math.acos(clamp(a.dot(b), -1, 1)));
+  const l1 = new THREE.Line(new THREE.BufferGeometry().setFromPoints([v, p2]), new THREE.LineBasicMaterial({ color: 0xffd166, depthTest: false }));
+  const l2 = new THREE.Line(new THREE.BufferGeometry().setFromPoints([v, p3]), new THREE.LineBasicMaterial({ color: 0xffd166, depthTest: false }));
+  l1.renderOrder = 998; l2.renderOrder = 998; scene.add(l1, l2);
+  const div = document.createElement('div'); div.className = 'dl ml'; div.innerHTML = `<b>${fmt(ang, 1)}°</b>`;
+  const m = { a: v, b: v, ma: markers[0], mb: markers[1], mc: markers[2], line: l1, line2: l2, el: div, mid: v.clone().add(p2).add(p3).multiplyScalar(1 / 3) };
+  const x = document.createElement('button'); x.textContent = '✕'; x.title = 'Borrar esta medida'; x.onclick = () => removeMeasure(m);
+  div.firstChild.after(x); $('labels').appendChild(div); measures.push(m); requestRender();
 }
 function createMeasure(a, b, ma) {
   const mb = addMarker(b);
@@ -1582,7 +1614,10 @@ function createMeasure(a, b, ma) {
   div.firstChild.after(x); $('labels').appendChild(div); measures.push(m);
 }
 function removeMeasure(m) {
-  removeMarker(m.ma); removeMarker(m.mb); scene.remove(m.line); m.line.geometry.dispose(); m.el.remove();
+  removeMarker(m.ma); removeMarker(m.mb); if (m.mc) removeMarker(m.mc);
+  scene.remove(m.line); m.line.geometry.dispose();
+  if (m.line2) { scene.remove(m.line2); m.line2.geometry.dispose(); }
+  m.el.remove();
   const i = measures.indexOf(m); if (i >= 0) measures.splice(i, 1); requestRender();
 }
 function clearMeasures() { cancelPending(); measures.slice().forEach(removeMeasure); }
@@ -1815,6 +1850,64 @@ async function simplifySelected() {
     ng.setAttribute('position', new THREE.BufferAttribute(pos, 3)); ng.setIndex(idx); ng.computeVertexNormals(); ng.userData = { welded: true };
     replaceGeometry(o, ng); toast(`Triángulos: ${Math.round(before).toLocaleString('es')} → ${Math.round(idx.length / 3).toLocaleString('es')}`, { type: 'ok' });
   } catch (err) { showError('No se pudo simplificar: ' + err.message); } finally { busy(false); }
+}
+
+async function hollowSelected() {
+  const o = needMesh(); if (!o) return;
+  const wall = clamp(num('hollowWall', 2), 0.4, 50);
+  busy(true, 'Vaciando…'); await tick();
+  try {
+    const csg = await needCSG(); if (!csg) return;
+    const outer = worldGeometry(o);
+    const inner = weldedCopy(outer, 1e-4);                 // ya trae normales por vértice
+    const P = inner.attributes.position.array, N = inner.attributes.normal.array;
+    for (let i = 0; i < P.length; i += 3) { P[i] -= N[i] * wall; P[i + 1] -= N[i + 1] * wall; P[i + 2] -= N[i + 2] * wall; }
+    inner.computeVertexNormals(); inner.computeBoundingBox(); inner.computeBoundingSphere();
+    const geo = csgOp(csg, outer, inner, 'SUBTRACTION');
+    if (!geo.attributes.position.count) return toast('El grosor es demasiado grande: la pieza quedaría vacía. Usa un valor menor.', { type: 'warn' });
+    pushUndo(); replaceWith(o, [geo], '_vaciada');
+    toast('Pieza vaciada (pared de ' + wall + ' mm)', { type: 'ok' });
+  } catch (err) { showError('No se pudo vaciar: ' + err.message + '. La malla debe estar cerrada; prueba "Soldar vértices" antes.'); } finally { busy(false); }
+}
+
+/* ---- alinear una pieza contra otra (por cajas, sin CSG) ---- */
+function alignSelected() {
+  const o = selected, t = objects.find((x) => x.uuid === $('alignTarget').value);
+  if (!o || !t || o === t) return toast('Selecciona una pieza y un objetivo distinto', { type: 'warn' });
+  const ai = AXI[$('alignAxis').value], mode = $('alignMode').value;
+  o.updateMatrixWorld(true); t.updateMatrixWorld(true);
+  const bo = new THREE.Box3().setFromObject(o, true), bt = new THREE.Box3().setFromObject(t, true);
+  if (bo.isEmpty() || bt.isEmpty()) return;
+  let delta = 0;
+  if (mode === 'center') delta = bt.getCenter(new THREE.Vector3()).getComponent(ai) - bo.getCenter(new THREE.Vector3()).getComponent(ai);
+  else if (mode === 'min') delta = bt.min.getComponent(ai) - bo.max.getComponent(ai);
+  else delta = bt.max.getComponent(ai) - bo.min.getComponent(ai);
+  pushUndo(); o.position.setComponent(ai, o.position.getComponent(ai) + delta); onTransformEnd();
+  toast('Pieza alineada', { type: 'ok' });
+}
+
+/* ---- verificación rápida de malla cerrada (watertight) ---- */
+const watertightCache = new WeakMap();
+function edgeKey(a, b) { return a < b ? a + '_' + b : b + '_' + a; }
+function isWatertight(g) {
+  if (!g.index) return { ok: null, bad: 0 };
+  const I = g.index.array, map = new Map();
+  for (let i = 0; i < I.length; i += 3) {
+    const a = I[i], b = I[i + 1], c = I[i + 2];
+    [[a, b], [b, c], [c, a]].forEach(([x, y]) => { const k = edgeKey(x, y); map.set(k, (map.get(k) || 0) + 1); });
+  }
+  let bad = 0; map.forEach((v) => { if (v !== 2) bad++; });
+  return { ok: bad === 0, bad };
+}
+function checkWatertight(o) {
+  const g = o.geometry;
+  if (watertightCache.has(g)) return watertightCache.get(g);
+  let res;
+  try {
+    if (triCount(g) > 400000) res = { ok: null, bad: 0 };          // malla muy grande: no se evalúa (costaría demasiado)
+    else res = isWatertight(g.userData.welded ? g : weldedCopy(g, 1e-4));
+  } catch (_) { res = { ok: null, bad: 0 }; }
+  watertightCache.set(g, res); return res;
 }
 
 /* ---- colocar, espejo, patrones ---- */
@@ -2275,91 +2368,6 @@ async function aiAsk() {
 /* =====================================================================
    18. ACCIONES (menús, botones y atajos)
    ===================================================================== */
-function scanAddLog(msg, good=true) {
-  const box = $('scanLog'); if (!box) return;
-  const d = document.createElement('div'); d.className = good ? 'good' : 'bad'; d.textContent = msg;
-  box.prepend(d);
-}
-const SCAN = { stream:null, photos:[], bad:0, totalQuality:0, session:Date.now(), running:false };
-function scanUpdate() {
-  const n=SCAN.photos.length, good=n;
-  // El escáner está oculto temporalmente. Si sus controles no están en el DOM,
-  // no debe impedir que el editor 3D arranque.
-  const set=(id,v)=>{ const el=$(id); if(el) el.textContent=v; };
-  const style=(id,p,v)=>{ const el=$(id); if(el) el.style[p]=v; };
-  set('scanCount',n); set('scanGood',good); set('scanBad',SCAN.bad);
-  set('scanAvg',n ? Math.round(SCAN.totalQuality/n)+'%' : '—');
-  set('scanSession',n ? new Date(SCAN.session).toLocaleTimeString() : 'Nueva');
-  style('scanMeter','width',Math.min(100,n/36*100)+'%');
-  const ring=Math.min(3,Math.floor(n/12)+1), within=n%12;
-  set('scanRing','textContent','Anillo '+ring+' · '+within+'/12');
-}
-function scanQualityFromCanvas(canvas) {
-  const ctx=canvas.getContext('2d',{willReadFrequently:true}), w=canvas.width, h=canvas.height;
-  const step=Math.max(2,Math.floor(Math.min(w,h)/180)), data=ctx.getImageData(0,0,w,h).data;
-  let sum=0,sum2=0,count=0,edge=0,prev=0;
-  for(let y=step;y<h;y+=step) for(let x=step;x<w;x+=step){
-    const p=(y*w+x)*4, g=.299*data[p]+.587*data[p+1]+.114*data[p+2];
-    sum+=g; sum2+=g*g; count++;
-    const q=((y-step)*w+x)*4, pg=.299*data[q]+.587*data[q+1]+.114*data[q+2];
-    edge+=Math.abs(g-pg); prev=g;
-  }
-  const mean=sum/count, variance=Math.max(0,sum2/count-mean*mean), sharp=Math.min(100,edge/count*2.8);
-  const exposure=Math.max(0,100-Math.abs(mean-128)/1.28);
-  const quality=Math.round(Math.max(0,Math.min(100,sharp*.65+exposure*.35)));
-  return {quality,mean,sharp};
-}
-async function scanBlobToPhoto(blob, source='foto') {
-  const img=new Image(); img.src=URL.createObjectURL(blob); await img.decode();
-  const max=1280, scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
-  const cv=document.createElement('canvas'); cv.width=Math.max(1,Math.round(img.naturalWidth*scale)); cv.height=Math.max(1,Math.round(img.naturalHeight*scale));
-  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height); URL.revokeObjectURL(img.src);
-  const q=scanQualityFromCanvas(cv);
-  if(q.quality<42){ SCAN.bad++; scanAddLog(source+': descartada ('+q.quality+'% de calidad)',false); scanUpdate(); return false; }
-  const out=await new Promise(res=>cv.toBlob(res,'image/jpeg',.88));
-  SCAN.photos.push({blob:out,quality:q.quality,mean:q.mean,sharp:q.sharp,at:Date.now()});
-  SCAN.totalQuality+=q.quality; scanAddLog(source+': aceptada ('+q.quality+'%)',true); scanUpdate(); return true;
-}
-async function scanCamera() {
-  if(SCAN.stream){ $('scanVideo').srcObject=SCAN.stream; return; }
-  if(!navigator.mediaDevices?.getUserMedia) throw new Error('Este navegador no permite acceso a cámara.');
-  SCAN.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
-  $('scanVideo').srcObject=SCAN.stream; $('scanVideo').play(); toast('Cámara activa · mantén distancia constante',{type:'ok'});
-}
-async function scanCapture() {
-  if(!SCAN.stream) return scanCamera();
-  const v=$('scanVideo'); if(!v.videoWidth) throw new Error('La cámara todavía no está lista.');
-  const cv=document.createElement('canvas'); cv.width=v.videoWidth; cv.height=v.videoHeight; cv.getContext('2d').drawImage(v,0,0);
-  await scanBlobToPhoto(await new Promise(r=>cv.toBlob(r,'image/jpeg',.9)),'Cámara');
-}
-async function scanPickFiles(files) {
-  for(const f of files) await scanBlobToPhoto(f,f.name);
-}
-function scanClear() {
-  SCAN.photos=[]; SCAN.bad=0; SCAN.totalQuality=0; SCAN.session=Date.now();
-  const log=$('scanLog'); if(log) log.innerHTML=''; scanUpdate(); $('scanManifest').style.display='none';
-  toast('Sesión de escaneo vaciada');
-}
-async function scanPrepare() {
-  if(SCAN.photos.length<8) throw new Error('Necesitas al menos 8 fotos válidas. Para una reconstrucción real, apunta a 24–36 o más.');
-  let JSZip;
-  try {
-    ({default: JSZip} = await import('jszip'));
-  } catch (e) {
-    throw new Error('No se pudo cargar el módulo ZIP. La captura sigue funcionando, pero vuelve a intentarlo con conexión a internet.');
-  }
-  const manifest={app:'YC🪐 Editor 3D',version:1,created:new Date().toISOString(),count:SCAN.photos.length,quality:Math.round(SCAN.totalQuality/SCAN.photos.length),files:SCAN.photos.map((p,i)=>({name:'yc3d_'+String(i+1).padStart(3,'0')+'.jpg',quality:p.quality}))};
-  const zip=new JSZip();
-  zip.file('manifest.json',JSON.stringify(manifest,null,2));
-  const photos=zip.folder('images');
-  SCAN.photos.forEach((p,i)=>photos.file('yc3d_'+String(i+1).padStart(3,'0')+'.jpg',p.blob));
-  const zipBlob=await zip.generateAsync({type:'blob',compression:'STORE'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(zipBlob); a.download='YC-Scanner-dataset.zip'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-  $('scanManifest').style.display='block'; $('scanManifest').textContent='Dataset preparado: '+manifest.count+' fotos · calidad media '+manifest.quality+'% · ZIP listo.';
-  toast('Dataset de reconstrucción exportado',{type:'ok'});
-}
-function scanWebSfm(){ window.open('https://websfm.onrender.com/','_blank','noopener'); }
-
 const A = {
   newProject() { if (objects.length && !confirm('¿Empezar un proyecto nuevo? Se borrará la escena actual. Guarda el proyecto antes si lo necesitas.')) return; clearScene(); toast('Proyecto nuevo'); },
   openProject() { $('fileProject').click(); },
@@ -2369,19 +2377,18 @@ const A = {
   shape: (a) => addShape(a), template: (a) => TEMPLATES[a] && buildParts(TEMPLATES[a], a), addText,
   refPick() { $('fileRef').click(); }, guidePick() { $('fileGuide').click(); }, guideClear: clearGuide,
   tool: (a) => setTool(a), tab(a) { setTab(a); if (innerWidth <= 900) $('side').classList.add('open'); },
-  scanCamera, scanCapture, scanClear, scanPrepare, scanWebSfm,
-  scanPick() { $('scanFiles').click(); },
   view: (a) => setView(a), toggleOrtho() { setOrtho(!S.ortho); }, focus() { selected && !selBox.isEmpty() ? frameBox(selBox) : frameAll(); }, focusAll: frameAll,
   camPanel() { $('camPanel').classList.toggle('open'); }, togglePanel() { $('side').classList.toggle('open'); },
   help() { openModal('helpModal'); }, closeModal: (a) => closeModal(a),
-  floor: floorSel, centerOrigin, centerPivot, resetRot, mirror: (a) => mirrorSelected(a), arrayLinear, arrayCircular,
+  floor: floorSel, centerOrigin, centerPivot, resetRot, mirror: (a) => mirrorSelected(a), arrayLinear, arrayCircular, alignTo: alignSelected,
   sculptMode(a) { sculpt.mode = a; document.querySelectorAll('[data-act="sculptMode"]').forEach((b) => b.classList.toggle('on', b.dataset.arg === a)); },
   subdivide: subdivideSelected, weld: weldSelected, flip: flipSelected, bakeScale: bakeScaleSelected, smoothMesh: smoothSelected, simplify: simplifySelected,
   cutApply() { return doCut(selected, $('cutAxis').value, num('cutPosNum', 0), $('cutSide').value, $('cutCap').checked); },
   cutBelow() { return doCut(selected, 'y', 0, 'pos', $('cutCap').checked); },
   cutterBox: addCutter, cutBoxApply: applyCutters, cutBoxClear: clearCutters,
   boolUnion: () => boolOp('union'), boolSub: () => boolOp('sub'), boolInter: () => boolOp('inter'), boolMerge: () => boolOp('merge'),
-  measureClear: clearMeasures,
+  hollow: hollowSelected,
+  measureClear: clearMeasures, measureMode: (a) => setMeasureMode(a),
   aiGenerate, aiAsk,
   aiSaveKey() { AI.key = $('aiKey').value.trim(); AI.model = $('aiModel').value.trim() || AI.model; try { localStorage.setItem('yc_ai_key', AI.key); localStorage.setItem('yc_ai_model', AI.model); } catch (_) {} toast('Datos de IA guardados en este navegador', { type: 'ok' }); },
   contactWA() { window.open(`https://wa.me/${CONTACT_WA}?text=${encodeURIComponent('Hola, quiero el plan completo de Scaner3D')}`, '_blank'); },
@@ -2476,8 +2483,6 @@ function wireControls() {
   on('fileProject', 'change', (e) => { [...e.target.files].forEach(importFile); e.target.value = ''; });
   on('fileGuide', 'change', (e) => { if (e.target.files[0]) loadGuide(e.target.files[0]); e.target.value = ''; });
   on('fileRef', 'change', (e) => { if (e.target.files[0]) addReference(e.target.files[0]); e.target.value = ''; });
-  on('scanFiles', 'change', (e) => { scanPickFiles([...e.target.files]); e.target.value=''; });
-  on('scanFilesHidden', 'change', (e) => { scanPickFiles([...e.target.files]); e.target.value=''; });
 
   on('btnLogin', 'click', () => authDo('login')); on('btnRegister', 'click', () => authDo('register'));
   on('authPass', 'keydown', (e) => { if (e.key === 'Enter') authDo('login'); });
@@ -2495,7 +2500,7 @@ function wireControls() {
 }
 function init() {
   buildPlate(); applySnap(); resizeAll(); buildMatPresets(); wireControls();
-  setTab('obj'); setTool('move'); syncHistoryUI(); refreshList(); renderAccess(); scanUpdate();
+  setTab('obj'); setTool('move'); syncHistoryUI(); refreshList(); renderAccess();
   needCSG();                                           // precarga el motor de booleanas sin bloquear
   loop();
   initAccount();
