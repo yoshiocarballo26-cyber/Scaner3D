@@ -424,6 +424,8 @@ input[type=color]{border-color:#245173}
       <button class="mi" data-act="shape" data-arg="wedge">Cuña</button>
       <button class="mi" data-act="shape" data-arg="tube">Tubo</button>
       <button class="mi" data-act="shape" data-arg="plate">Placa</button>
+      <button class="mi" data-act="shape" data-arg="gear">Engrane</button>
+      <button class="mi" data-act="shape" data-arg="nut">Tuerca</button>
       <div class="msep"></div>
       <button class="mi" data-act="tab" data-arg="create">Texto 3D y plantillas…</button>
       <button class="mi" data-act="refPick">Imagen de referencia…</button>
@@ -587,6 +589,8 @@ input[type=color]{border-color:#245173}
             <button class="btn" data-act="shape" data-arg="wedge">Cuña</button>
             <button class="btn" data-act="shape" data-arg="tube">Tubo</button>
             <button class="btn" data-act="shape" data-arg="plate">Placa</button>
+            <button class="btn" data-act="shape" data-arg="gear">Engrane</button>
+            <button class="btn" data-act="shape" data-arg="nut">Tuerca</button>
           </div>
         </div></details>
 
@@ -598,6 +602,7 @@ input[type=color]{border-color:#245173}
             <button class="btn sm" data-act="template" data-arg="soporte">Soporte de celular</button>
             <button class="btn sm" data-act="template" data-arg="llavero">Llavero con nombre</button>
             <button class="btn sm" data-act="template" data-arg="maceta">Maceta</button>
+            <button class="btn sm" data-act="template" data-arg="tornillo">Tornillo</button>
           </div>
         </div></details>
 
@@ -1144,8 +1149,8 @@ el.addEventListener('webglcontextrestored', () => { requestRender(); toast('Grá
 /* =====================================================================
    5. PIEZAS: creación, formas y plantillas
    ===================================================================== */
-const SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus', 'capsule', 'pyramid', 'hex', 'wedge', 'tube'];
-const SHAPE_NAMES = { box: 'Cubo', sphere: 'Esfera', cylinder: 'Cilindro', cone: 'Cono', torus: 'Toro', capsule: 'Capsula', pyramid: 'Piramide', hex: 'Prisma', wedge: 'Cuna', tube: 'Tubo', plate: 'Placa' };
+const SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus', 'capsule', 'pyramid', 'hex', 'wedge', 'tube', 'gear', 'nut'];
+const SHAPE_NAMES = { box: 'Cubo', sphere: 'Esfera', cylinder: 'Cilindro', cone: 'Cono', torus: 'Toro', capsule: 'Capsula', pyramid: 'Piramide', hex: 'Prisma', wedge: 'Cuna', tube: 'Tubo', plate: 'Placa', gear: 'Engrane', nut: 'Tuerca' };
 const nameCounters = {};
 const uniqueName = (base) => { nameCounters[base] = (nameCounters[base] || 0) + 1; return base + '_' + nameCounters[base]; };
 
@@ -1167,6 +1172,23 @@ function baseGeo(shape, hi) {                         // geometrías de 1 unidad
       const sh = new THREE.Shape(); sh.absarc(0, 0, 0.5, 0, Math.PI * 2, false);
       const hole = new THREE.Path(); hole.absarc(0, 0, 0.35, 0, Math.PI * 2, true); sh.holes.push(hole);
       const g = new THREE.ExtrudeGeometry(sh, { depth: 1, bevelEnabled: false, curveSegments: hi ? 96 : 48 });
+      g.translate(0, 0, -0.5); g.rotateX(-Math.PI / 2); return g;
+    }
+    case 'nut': {
+      const sh = new THREE.Shape();
+      for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + Math.PI / 6, x = Math.cos(a) * 0.5, y = Math.sin(a) * 0.5; i === 0 ? sh.moveTo(x, y) : sh.lineTo(x, y); }
+      sh.closePath();
+      const hole = new THREE.Path(); hole.absarc(0, 0, 0.28, 0, Math.PI * 2, true); sh.holes.push(hole);
+      const g = new THREE.ExtrudeGeometry(sh, { depth: 1, bevelEnabled: false, curveSegments: hi ? 32 : 16 });
+      g.translate(0, 0, -0.5); g.rotateX(-Math.PI / 2); return g;
+    }
+    case 'gear': {
+      const teeth = 12, rOut = 0.5, rIn = 0.38, bore = 0.14;
+      const sh = new THREE.Shape();
+      for (let i = 0; i < teeth * 2; i++) { const a = (i / (teeth * 2)) * Math.PI * 2, r = i % 2 === 0 ? rOut : rIn, x = Math.cos(a) * r, y = Math.sin(a) * r; i === 0 ? sh.moveTo(x, y) : sh.lineTo(x, y); }
+      sh.closePath();
+      const hole = new THREE.Path(); hole.absarc(0, 0, bore, 0, Math.PI * 2, true); sh.holes.push(hole);
+      const g = new THREE.ExtrudeGeometry(sh, { depth: 1, bevelEnabled: false, curveSegments: hi ? 32 : 16 });
       g.translate(0, 0, -0.5); g.rotateX(-Math.PI / 2); return g;
     }
     default: { const n = hi ? 12 : 1; return new THREE.BoxGeometry(1, 1, 1, n, n, n); }
@@ -1228,6 +1250,7 @@ const TEMPLATES = {
   soporte: [{ shape: 'box', size: [70, 6, 80], pos: [0, 3, 0], color: '#c9ced6' }, { shape: 'box', size: [70, 90, 6], pos: [0, 50, -30], rot: [-12, 0, 0], color: '#c9ced6' }, { shape: 'box', size: [70, 12, 6], pos: [0, 9, 34], color: '#c9ced6' }],
   llavero: [{ shape: 'box', size: [60, 3, 25], pos: [0, 1.5, 0], color: '#c9ced6' }, { shape: 'torus', size: [16, 16, 16], pos: [-34, 8.5, 0], rot: [90, 0, 0], color: '#c9ced6' }],
   maceta: [{ shape: 'cylinder', size: [50, 4, 50], pos: [0, 2, 0], color: '#b5651d' }, { shape: 'tube', size: [50, 45, 50], pos: [0, 26.5, 0], color: '#b5651d' }],
+  tornillo: [{ shape: 'hex', size: [16, 8, 16], pos: [0, 34, 0], color: '#9a9da5' }, { shape: 'cylinder', size: [8, 44, 8], pos: [0, 12, 0], color: '#9a9da5' }],
 };
 
 /* =====================================================================
@@ -2418,7 +2441,7 @@ function imageToPart(file) {
   });
 }
 const AI_SYS_GEN = `Eres un asistente de modelado 3D para impresión 3D. Devuelve SOLO JSON válido con esta forma:
-{"nombre":"texto","partes":[{"forma":"box|sphere|cylinder|cone|torus|capsule|pyramid|hex|wedge|tube","tam":[ancho,alto,fondo],"pos":[x,y,z],"rot":[rx,ry,rz],"color":"#rrggbb"}]}
+{"nombre":"texto","partes":[{"forma":"box|sphere|cylinder|cone|torus|capsule|pyramid|hex|wedge|tube|gear|nut","tam":[ancho,alto,fondo],"pos":[x,y,z],"rot":[rx,ry,rz],"color":"#rrggbb"}]}
 Reglas: unidades en milímetros; el eje Y es hacia arriba; la pieza descansa sobre y=0; "pos" es el CENTRO de cada parte; "rot" en grados; máximo 40 partes; el objeto completo mide entre 20 y 200 mm; las partes deben tocarse o solaparse para formar un solo objeto reconocible. "cylinder", "cone", "tube" y "torus" tienen su eje a lo largo de Y (usa rot para girarlos).`;
 function aiExtractJson(t) { const a = t.indexOf('{'), b = t.lastIndexOf('}'); if (a < 0 || b < 0) throw new Error('La IA no devolvió JSON'); return JSON.parse(t.slice(a, b + 1)); }
 async function aiGenerate() {
