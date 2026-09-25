@@ -424,8 +424,6 @@ input[type=color]{border-color:#245173}
       <button class="mi" data-act="shape" data-arg="wedge">Cuña</button>
       <button class="mi" data-act="shape" data-arg="tube">Tubo</button>
       <button class="mi" data-act="shape" data-arg="plate">Placa</button>
-      <button class="mi" data-act="shape" data-arg="gear">Engrane</button>
-      <button class="mi" data-act="shape" data-arg="nut">Tuerca</button>
       <div class="msep"></div>
       <button class="mi" data-act="tab" data-arg="create">Texto 3D y plantillas…</button>
       <button class="mi" data-act="refPick">Imagen de referencia…</button>
@@ -589,8 +587,6 @@ input[type=color]{border-color:#245173}
             <button class="btn" data-act="shape" data-arg="wedge">Cuña</button>
             <button class="btn" data-act="shape" data-arg="tube">Tubo</button>
             <button class="btn" data-act="shape" data-arg="plate">Placa</button>
-            <button class="btn" data-act="shape" data-arg="gear">Engrane</button>
-            <button class="btn" data-act="shape" data-arg="nut">Tuerca</button>
           </div>
         </div></details>
 
@@ -602,7 +598,6 @@ input[type=color]{border-color:#245173}
             <button class="btn sm" data-act="template" data-arg="soporte">Soporte de celular</button>
             <button class="btn sm" data-act="template" data-arg="llavero">Llavero con nombre</button>
             <button class="btn sm" data-act="template" data-arg="maceta">Maceta</button>
-            <button class="btn sm" data-act="template" data-arg="tornillo">Tornillo</button>
           </div>
         </div></details>
 
@@ -689,6 +684,19 @@ input[type=color]{border-color:#245173}
           </div>
         </div></details>
 
+        <details class="sec"><summary>Deformar</summary><div class="body">
+          <span class="lab" style="margin-top:0">Ahusar (taper)</span>
+          <div class="row"><select id="taperAxis"><option value="x">Eje X</option><option value="y" selected>Eje Y</option><option value="z">Eje Z</option></select><input type="number" id="taperAmt" value="0.5" step="0.05" min="0" max="3" title="Factor en el extremo (1 = sin cambio)"></div>
+          <button class="btn sm" data-act="taper">Ahusar pieza</button>
+          <span class="lab">Torcer (twist)</span>
+          <div class="row"><select id="twistAxis"><option value="x">Eje X</option><option value="y" selected>Eje Y</option><option value="z">Eje Z</option></select><input type="number" id="twistAmt" value="90" step="5" title="Grados totales, de un extremo al otro"></div>
+          <button class="btn sm" data-act="twist">Torcer pieza</button>
+          <span class="lab">Doblar (bend)</span>
+          <div class="row"><select id="bendAxis"><option value="x">Eje X</option><option value="y" selected>Eje Y</option><option value="z">Eje Z</option></select><input type="number" id="bendAmt" value="45" step="5" min="-170" max="170" title="Ángulo total del doblez"></div>
+          <button class="btn sm" data-act="bend">Doblar pieza</button>
+          <p class="note">Deforman la pieza a lo largo del eje elegido — útil para asas, cuernos, formas ahusadas, anillos y arcos. No requieren malla cerrada. Si la pieza tiene pocos triángulos se ve poligonal al doblarla/torcerla: usa "Detalle: Alto" al crearla, o Subdividir antes, para que quede curva y suave.</p>
+        </div></details>
+
         <details class="sec"><summary>Redondear bordes</summary><div class="body">
           <span class="lab" style="margin-top:0">Nivel de redondeo (1 suave — 5 fuerte)</span>
           <input type="range" id="roundAmount" min="1" max="5" step="1" value="2">
@@ -767,6 +775,11 @@ input[type=color]{border-color:#245173}
           <div class="g2" style="margin-top:8px"><button class="btn pri" data-act="aiGenerate">Generar bloques 3D</button><button class="btn" data-act="aiAsk">Preguntar</button></div>
           <p class="note">“Generar” arma la pieza con formas básicas (un boceto tridimensional que luego refinas con esculpir y cortar). No crea mallas orgánicas detalladas.</p>
           <div id="aiLog"></div>
+        </div></details>
+        <details class="sec"><summary>Malla orgánica real (gratis, fuera de la app)</summary><div class="body">
+          <p class="note" style="margin-top:0">Gemini no puede generar una malla orgánica detallada — solo formas básicas. Para eso existen servicios entrenados para generar geometría (como Meshy): son gratis para usar en su propia página, pero conectarlos dentro de esta app cuesta una suscripción.</p>
+          <button class="btn sm" data-act="openMeshy">Abrir Meshy.ai (gratis) para generar un modelo real</button>
+          <p class="note">Genera tu modelo ahí, descárgalo en STL o GLB, y tráelo aquí con Archivo → Importar para seguir editándolo (vaciar, redondear, cortar, exportar).</p>
         </div></details>
       </div>
     </aside>
@@ -1149,8 +1162,8 @@ el.addEventListener('webglcontextrestored', () => { requestRender(); toast('Grá
 /* =====================================================================
    5. PIEZAS: creación, formas y plantillas
    ===================================================================== */
-const SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus', 'capsule', 'pyramid', 'hex', 'wedge', 'tube', 'gear', 'nut'];
-const SHAPE_NAMES = { box: 'Cubo', sphere: 'Esfera', cylinder: 'Cilindro', cone: 'Cono', torus: 'Toro', capsule: 'Capsula', pyramid: 'Piramide', hex: 'Prisma', wedge: 'Cuna', tube: 'Tubo', plate: 'Placa', gear: 'Engrane', nut: 'Tuerca' };
+const SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus', 'capsule', 'pyramid', 'hex', 'wedge', 'tube'];
+const SHAPE_NAMES = { box: 'Cubo', sphere: 'Esfera', cylinder: 'Cilindro', cone: 'Cono', torus: 'Toro', capsule: 'Capsula', pyramid: 'Piramide', hex: 'Prisma', wedge: 'Cuna', tube: 'Tubo', plate: 'Placa' };
 const nameCounters = {};
 const uniqueName = (base) => { nameCounters[base] = (nameCounters[base] || 0) + 1; return base + '_' + nameCounters[base]; };
 
@@ -1172,23 +1185,6 @@ function baseGeo(shape, hi) {                         // geometrías de 1 unidad
       const sh = new THREE.Shape(); sh.absarc(0, 0, 0.5, 0, Math.PI * 2, false);
       const hole = new THREE.Path(); hole.absarc(0, 0, 0.35, 0, Math.PI * 2, true); sh.holes.push(hole);
       const g = new THREE.ExtrudeGeometry(sh, { depth: 1, bevelEnabled: false, curveSegments: hi ? 96 : 48 });
-      g.translate(0, 0, -0.5); g.rotateX(-Math.PI / 2); return g;
-    }
-    case 'nut': {
-      const sh = new THREE.Shape();
-      for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + Math.PI / 6, x = Math.cos(a) * 0.5, y = Math.sin(a) * 0.5; i === 0 ? sh.moveTo(x, y) : sh.lineTo(x, y); }
-      sh.closePath();
-      const hole = new THREE.Path(); hole.absarc(0, 0, 0.28, 0, Math.PI * 2, true); sh.holes.push(hole);
-      const g = new THREE.ExtrudeGeometry(sh, { depth: 1, bevelEnabled: false, curveSegments: hi ? 32 : 16 });
-      g.translate(0, 0, -0.5); g.rotateX(-Math.PI / 2); return g;
-    }
-    case 'gear': {
-      const teeth = 12, rOut = 0.5, rIn = 0.38, bore = 0.14;
-      const sh = new THREE.Shape();
-      for (let i = 0; i < teeth * 2; i++) { const a = (i / (teeth * 2)) * Math.PI * 2, r = i % 2 === 0 ? rOut : rIn, x = Math.cos(a) * r, y = Math.sin(a) * r; i === 0 ? sh.moveTo(x, y) : sh.lineTo(x, y); }
-      sh.closePath();
-      const hole = new THREE.Path(); hole.absarc(0, 0, bore, 0, Math.PI * 2, true); sh.holes.push(hole);
-      const g = new THREE.ExtrudeGeometry(sh, { depth: 1, bevelEnabled: false, curveSegments: hi ? 32 : 16 });
       g.translate(0, 0, -0.5); g.rotateX(-Math.PI / 2); return g;
     }
     default: { const n = hi ? 12 : 1; return new THREE.BoxGeometry(1, 1, 1, n, n, n); }
@@ -1250,7 +1246,6 @@ const TEMPLATES = {
   soporte: [{ shape: 'box', size: [70, 6, 80], pos: [0, 3, 0], color: '#c9ced6' }, { shape: 'box', size: [70, 90, 6], pos: [0, 50, -30], rot: [-12, 0, 0], color: '#c9ced6' }, { shape: 'box', size: [70, 12, 6], pos: [0, 9, 34], color: '#c9ced6' }],
   llavero: [{ shape: 'box', size: [60, 3, 25], pos: [0, 1.5, 0], color: '#c9ced6' }, { shape: 'torus', size: [16, 16, 16], pos: [-34, 8.5, 0], rot: [90, 0, 0], color: '#c9ced6' }],
   maceta: [{ shape: 'cylinder', size: [50, 4, 50], pos: [0, 2, 0], color: '#b5651d' }, { shape: 'tube', size: [50, 45, 50], pos: [0, 26.5, 0], color: '#b5651d' }],
-  tornillo: [{ shape: 'hex', size: [16, 8, 16], pos: [0, 34, 0], color: '#9a9da5' }, { shape: 'cylinder', size: [8, 44, 8], pos: [0, 12, 0], color: '#9a9da5' }],
 };
 
 /* =====================================================================
@@ -1522,6 +1517,7 @@ function useMat(fn) { const o = selected; if (!o?.material) return; fn(o.materia
 const MAT_PRESETS = [
   ['Resina gris', '#9aa0a8', 0, 0.6], ['Cera verde', '#4fae6a', 0, 0.5], ['Rojo auto', '#b3122a', 0.6, 0.25], ['Cromo', '#d0d4da', 1, 0.15],
   ['Oro', '#d9b45c', 1, 0.3], ['Negro', '#202226', 0, 0.4], ['Azul', '#2b6cff', 0.4, 0.3], ['Blanco', '#f2f2f2', 0, 0.5],
+  ['Bronce', '#ad6f3b', 0.8, 0.35], ['Cobre', '#c9702e', 0.85, 0.3], ['Jade', '#3fa77e', 0.1, 0.35], ['Madera', '#8a5a34', 0, 0.7],
 ];
 function syncMaterialUI() {
   const m = selected?.material; if (!m) return;
@@ -1909,6 +1905,50 @@ async function simplifySelected() {
   } catch (err) { showError('No se pudo simplificar: ' + err.message); } finally { busy(false); }
 }
 
+function taperSelected() {
+  const o = needMesh(); if (!o) return;
+  const ax = AXI[$('taperAxis').value], factor = clamp(num('taperAmt', 0.5), 0, 3);
+  pushUndo();
+  const g = o.geometry.clone(); g.computeBoundingBox();
+  const bb = g.boundingBox, mn = bb.min.getComponent(ax), mx = bb.max.getComponent(ax), h = Math.max(1e-6, mx - mn);
+  const [ia, ib] = [0, 1, 2].filter((i) => i !== ax), P = g.attributes.position.array;
+  for (let i = 0; i < P.length; i += 3) {
+    const t = clamp((P[i + ax] - mn) / h, 0, 1), s = 1 + (factor - 1) * t;
+    P[i + ia] *= s; P[i + ib] *= s;
+  }
+  g.attributes.position.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
+  o.geometry = g; onGeometryChanged(); toast('Pieza ahusada', { type: 'ok' });
+}
+function twistSelected() {
+  const o = needMesh(); if (!o) return;
+  const ax = AXI[$('twistAxis').value], totalDeg = clamp(num('twistAmt', 90), -1080, 1080);
+  pushUndo();
+  const g = o.geometry.clone(); g.computeBoundingBox();
+  const bb = g.boundingBox, mn = bb.min.getComponent(ax), mx = bb.max.getComponent(ax), h = Math.max(1e-6, mx - mn);
+  const [ia, ib] = [0, 1, 2].filter((i) => i !== ax), P = g.attributes.position.array;
+  for (let i = 0; i < P.length; i += 3) {
+    const t = clamp((P[i + ax] - mn) / h, 0, 1), a = rad(totalDeg) * t, ca = Math.cos(a), sa = Math.sin(a);
+    const u = P[i + ia], w = P[i + ib];
+    P[i + ia] = u * ca - w * sa; P[i + ib] = u * sa + w * ca;
+  }
+  g.attributes.position.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
+  o.geometry = g; onGeometryChanged(); toast('Pieza torcida', { type: 'ok' });
+}
+function bendSelected() {
+  const o = needMesh(); if (!o) return;
+  const ax = AXI[$('bendAxis').value], thetaDeg = clamp(num('bendAmt', 45), -170, 170);
+  if (Math.abs(thetaDeg) < 0.5) return toast('El ángulo es casi cero: no hay doblez visible', { type: 'warn' });
+  pushUndo();
+  const g = o.geometry.clone(); g.computeBoundingBox();
+  const bb = g.boundingBox, mn = bb.min.getComponent(ax), mx = bb.max.getComponent(ax), h = Math.max(1e-6, mx - mn), mid = (mn + mx) / 2;
+  const [ia] = [0, 1, 2].filter((i) => i !== ax), theta = rad(thetaDeg), R = h / theta, P = g.attributes.position.array;
+  for (let i = 0; i < P.length; i += 3) {
+    const v = P[i + ax] - mid, u = P[i + ia], phi = theta * (v / h);
+    P[i + ia] = R - (R - u) * Math.cos(phi); P[i + ax] = mid + (R - u) * Math.sin(phi);
+  }
+  g.attributes.position.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
+  o.geometry = g; onGeometryChanged(); toast('Pieza doblada', { type: 'ok' });
+}
 async function roundEdgesSelected() {
   const o = needMesh(); if (!o) return;
   const level = clamp(Math.round(num('roundAmount', 2)), 1, 5);
@@ -2441,7 +2481,7 @@ function imageToPart(file) {
   });
 }
 const AI_SYS_GEN = `Eres un asistente de modelado 3D para impresión 3D. Devuelve SOLO JSON válido con esta forma:
-{"nombre":"texto","partes":[{"forma":"box|sphere|cylinder|cone|torus|capsule|pyramid|hex|wedge|tube|gear|nut","tam":[ancho,alto,fondo],"pos":[x,y,z],"rot":[rx,ry,rz],"color":"#rrggbb"}]}
+{"nombre":"texto","partes":[{"forma":"box|sphere|cylinder|cone|torus|capsule|pyramid|hex|wedge|tube","tam":[ancho,alto,fondo],"pos":[x,y,z],"rot":[rx,ry,rz],"color":"#rrggbb"}]}
 Reglas: unidades en milímetros; el eje Y es hacia arriba; la pieza descansa sobre y=0; "pos" es el CENTRO de cada parte; "rot" en grados; máximo 40 partes; el objeto completo mide entre 20 y 200 mm; las partes deben tocarse o solaparse para formar un solo objeto reconocible. "cylinder", "cone", "tube" y "torus" tienen su eje a lo largo de Y (usa rot para girarlos).`;
 function aiExtractJson(t) { const a = t.indexOf('{'), b = t.lastIndexOf('}'); if (a < 0 || b < 0) throw new Error('La IA no devolvió JSON'); return JSON.parse(t.slice(a, b + 1)); }
 async function aiGenerate() {
@@ -2488,15 +2528,17 @@ const A = {
   floor: floorSel, centerOrigin, centerPivot, resetRot, mirror: (a) => mirrorSelected(a), arrayLinear, arrayCircular, alignTo: alignSelected,
   sculptMode(a) { sculpt.mode = a; document.querySelectorAll('[data-act="sculptMode"]').forEach((b) => b.classList.toggle('on', b.dataset.arg === a)); },
   subdivide: subdivideSelected, weld: weldSelected, flip: flipSelected, bakeScale: bakeScaleSelected, smoothMesh: smoothSelected, simplify: simplifySelected,
+  taper: taperSelected, twist: twistSelected, bend: bendSelected,
   cutApply() { return doCut(selected, $('cutAxis').value, num('cutPosNum', 0), $('cutSide').value, $('cutCap').checked); },
   cutBelow() { return doCut(selected, 'y', 0, 'pos', $('cutCap').checked); },
-  cutterBox: addCutter, cutBoxApply: applyCutters, cutBoxClear: clearCutters, drainHole: addDrainHole,
+  cutterBox: addCutter, cutBoxApply: applyCutters, cutBoxClear: clearCutters, drainHole: addDrainHole, meshDiagnostics: runMeshDiagnostics,
   boolUnion: () => boolOp('union'), boolSub: () => boolOp('sub'), boolInter: () => boolOp('inter'), boolMerge: () => boolOp('merge'),
   hollow: hollowSelected, roundEdges: roundEdgesSelected,
   measureClear: clearMeasures, measureMode: (a) => setMeasureMode(a),
   aiGenerate, aiAsk,
   aiSaveKey() { AI.key = $('aiKey').value.trim(); AI.model = $('aiModel').value.trim() || AI.model; try { localStorage.setItem('yc_ai_key', AI.key); localStorage.setItem('yc_ai_model', AI.model); } catch (_) {} toast('Datos de IA guardados en este navegador', { type: 'ok' }); },
   contactWA() { window.open(`https://wa.me/${CONTACT_WA}?text=${encodeURIComponent('Hola, quiero el plan completo de Scaner3D')}`, '_blank'); },
+  openMeshy() { window.open('https://www.meshy.ai/', '_blank', 'noopener'); },
   logout() { fb?.authM.signOut(fb.auth); },
 };
 const closeMenus = () => document.querySelectorAll('.menu.open').forEach((m) => m.classList.remove('open'));
