@@ -949,7 +949,9 @@ let activeTab = 'obj';
    ===================================================================== */
 const viewport = $('viewport');
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+// Chromebook/móviles: limitar densidad para evitar que cada frame arrastre demasiados píxeles.
+const DPR_CAP = 1.0;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, DPR_CAP));
 renderer.setClearColor(0x000000, 0);
 viewport.insertBefore(renderer.domElement, viewport.firstChild);
 const el = renderer.domElement;
@@ -1343,7 +1345,18 @@ transform.addEventListener('objectChange', () => { fastBox(); syncTransformUI();
 
 const selBox = new THREE.Box3();
 const boxHelper = new THREE.Box3Helper(selBox, ACCENT); boxHelper.visible = false; scene.add(boxHelper);
-function fastBox() { if (!selected) { boxHelper.visible = false; return; } selBox.setFromObject(selected, false); boxHelper.visible = !selBox.isEmpty(); requestRender(); }
+// Caja rápida durante un arrastre: evita setFromObject(), que recorre la malla completa
+// en cada evento pointermove y se vuelve muy costoso con STL/OBJ densos.
+function fastBox() {
+  if (!selected) { boxHelper.visible = false; return; }
+  const g = selected.geometry;
+  if (!g.boundingBox) g.computeBoundingBox();
+  if (!g.boundingBox || g.boundingBox.isEmpty()) { boxHelper.visible = false; return; }
+  selected.updateMatrixWorld(false);
+  selBox.copy(g.boundingBox).applyMatrix4(selected.matrixWorld);
+  boxHelper.visible = !selBox.isEmpty();
+  requestRender();
+}
 function preciseBox() {
   if (!selected) { selBox.makeEmpty(); boxHelper.visible = false; return; }
   selected.updateMatrixWorld(true); selBox.setFromObject(selected, true); boxHelper.visible = !selBox.isEmpty();
@@ -2511,153 +2524,3 @@ async function aiAsk() {
 }
 
 /* =====================================================================
-   18. ACCIONES (menús, botones y atajos)
-   ===================================================================== */
-const A = {
-  newProject() { if (objects.length && !confirm('¿Empezar un proyecto nuevo? Se borrará la escena actual. Guarda el proyecto antes si lo necesitas.')) return; clearScene(); toast('Proyecto nuevo'); },
-  openProject() { $('fileProject').click(); },
-  saveProject, restoreSession: () => restoreSession(false),
-  importPick() { $('fileImport').click(); }, exportModal() { openModal('exportModal'); }, doExport,
-  undo, redo, duplicate: duplicateSelected, delete() { if (selected) deleteObject(selected); }, deselect,
-  shape: (a) => addShape(a), template: (a) => TEMPLATES[a] && buildParts(TEMPLATES[a], a), addText,
-  refPick() { $('fileRef').click(); }, guidePick() { $('fileGuide').click(); }, guideClear: clearGuide,
-  tool: (a) => setTool(a), tab(a) { setTab(a); if (innerWidth <= 900) $('side').classList.add('open'); },
-  view: (a) => setView(a), toggleOrtho() { setOrtho(!S.ortho); }, focus() { selected && !selBox.isEmpty() ? frameBox(selBox) : frameAll(); }, focusAll: frameAll,
-  camPanel() { $('camPanel').classList.toggle('open'); }, togglePanel() { $('side').classList.toggle('open'); },
-  help() { openModal('helpModal'); }, closeModal: (a) => closeModal(a),
-  floor: floorSel, centerOrigin, centerPivot, resetRot, mirror: (a) => mirrorSelected(a), arrayLinear, arrayCircular, alignTo: alignSelected,
-  sculptMode(a) { sculpt.mode = a; document.querySelectorAll('[data-act="sculptMode"]').forEach((b) => b.classList.toggle('on', b.dataset.arg === a)); },
-  subdivide: subdivideSelected, weld: weldSelected, flip: flipSelected, bakeScale: bakeScaleSelected, smoothMesh: smoothSelected, simplify: simplifySelected,
-  taper: taperSelected, twist: twistSelected, bend: bendSelected,
-  cutApply() { return doCut(selected, $('cutAxis').value, num('cutPosNum', 0), $('cutSide').value, $('cutCap').checked); },
-  cutBelow() { return doCut(selected, 'y', 0, 'pos', $('cutCap').checked); },
-  cutterBox: addCutter, cutBoxApply: applyCutters, cutBoxClear: clearCutters, drainHole: addDrainHole, meshDiagnostics: runMeshDiagnostics,
-  boolUnion: () => boolOp('union'), boolSub: () => boolOp('sub'), boolInter: () => boolOp('inter'), boolMerge: () => boolOp('merge'),
-  hollow: hollowSelected, roundEdges: roundEdgesSelected,
-  measureClear: clearMeasures, measureMode: (a) => setMeasureMode(a),
-  aiGenerate, aiAsk,
-  aiSaveKey() { AI.key = $('aiKey').value.trim(); AI.model = $('aiModel').value.trim() || AI.model; try { localStorage.setItem('yc_ai_key', AI.key); localStorage.setItem('yc_ai_model', AI.model); } catch (_) {} toast('Datos de IA guardados en este navegador', { type: 'ok' }); },
-  contactWA() { window.open(`https://wa.me/${CONTACT_WA}?text=${encodeURIComponent('Hola, quiero el plan completo de Scaner3D')}`, '_blank'); },
-  openMeshy() { window.open('https://www.meshy.ai/', '_blank', 'noopener'); },
-  logout() { fb?.authM.signOut(fb.auth); },
-};
-const closeMenus = () => document.querySelectorAll('.menu.open').forEach((m) => m.classList.remove('open'));
-document.addEventListener('click', (e) => {
-  const mb = e.target.closest('.menu-btn');
-  if (mb) { const m = mb.parentElement, was = m.classList.contains('open'); closeMenus(); if (!was) m.classList.add('open'); return; }
-  if (!e.target.closest('#camPanel') && !e.target.closest('#btnCam')) $('camPanel')?.classList.remove('open');
-  const a = e.target.closest('[data-act]'); closeMenus(); if (!a) return;
-  const f = A[a.dataset.act]; if (!f) { console.warn('[YC] acción sin definir:', a.dataset.act); return; }
-  Promise.resolve().then(() => f(a.dataset.arg, a)).catch((err) => showError(err.message || String(err)));
-});
-
-/* ---- atajos de teclado ---- */
-window.addEventListener('keydown', (e) => {
-  const t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) { if (e.key === 'Escape') t.blur(); return; }
-  const k = e.key.toLowerCase(), ctrl = e.ctrlKey || e.metaKey;
-  if (ctrl) {
-    if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-    else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
-    else if (k === 'd') { e.preventDefault(); duplicateSelected(); }
-    else if (k === 's') { e.preventDefault(); saveProject(); }
-    else if (k === 'e') { e.preventDefault(); openModal('exportModal'); }
-    return;
-  }
-  const digits = { 1: 'front', 2: 'back', 3: 'right', 4: 'left', 5: 'top', 6: 'bottom', 0: 'iso' };
-  if (k in digits) setView(digits[k]);
-  else if (k === 'q') setTool('select'); else if (k === 'g') setTool('move'); else if (k === 'r') setTool('rotate'); else if (k === 's') setTool('scale');
-  else if (k === 'm') setTool('measure'); else if (k === 'b') setTool('sculpt'); else if (k === 'x') setTool('cut');
-  else if (k === 'f') A.focus(); else if (k === 'a') frameAll(); else if (k === 'o') setOrtho(!S.ortho);
-  else if (k === 'delete' || k === 'backspace') { if (selected) { e.preventDefault(); deleteObject(selected); } }
-  else if (k === '?') openModal('helpModal');
-  else if (k === 'escape') {
-    const open = document.querySelector('.modal.open'); if (open && open.id !== 'authModal') return closeModal(open.id);
-    if (['measure', 'sculpt', 'cut'].includes(S.tool)) setTool('move'); else deselect();
-  }
-});
-
-/* =====================================================================
-   19. CONEXIÓN DE CONTROLES DEL PANEL E INICIO
-   ===================================================================== */
-function buildMatPresets() {
-  const box = $('matPresets'); if (!box) return;
-  MAT_PRESETS.forEach(([n, c, m, r]) => {
-    const b = document.createElement('button'); b.style.background = c; b.title = n;
-    b.onclick = () => { if (!selected) return; pushUndo(); useMat((mt) => { mt.color.set(c); if ('metalness' in mt) { mt.metalness = m; mt.roughness = r; } }); syncMaterialUI(); };
-    box.appendChild(b);
-  });
-}
-function wireControls() {
-  [['pos', 'pos'], ['rot', 'rot'], ['sca', 'sca'], ['dim', 'dim']].forEach(([id, kind]) =>
-    ['X', 'Y', 'Z'].forEach((ax, i) => on(id + ax, 'change', (e) => applyTransformField(kind, i, parseFloat(e.target.value)))));
-  on('snapOn', 'change', (e) => { S.snap = e.target.checked; applySnap(); });
-  on('snapMm', 'change', (e) => { S.snapMm = Math.max(0.1, +e.target.value || 1); applySnap(); });
-  on('snapDeg', 'change', (e) => { S.snapDeg = Math.max(1, +e.target.value || 15); applySnap(); });
-  on('surfaceSnapDist','change',e=>{e.target.value=clamp(+e.target.value||3,0.1,20);});
-  on('xraySection','change',updateXraySection);
-
-  on('matColor', 'click', () => selected && pushUndo());
-  on('matColor', 'input', (e) => useMat((m) => m.color.set(e.target.value)));
-  on('matMetal', 'input', (e) => { useMat((m) => { if ('metalness' in m) m.metalness = +e.target.value; }); $('vMetal').textContent = fmt(+e.target.value); });
-  on('matRough', 'input', (e) => { useMat((m) => { if ('roughness' in m) m.roughness = +e.target.value; }); $('vRough').textContent = fmt(+e.target.value); });
-  on('matOpacity', 'input', (e) => { const v = +e.target.value; useMat((m) => { m.transparent = v < 1; m.opacity = v; m.depthWrite = v >= 1; }); $('vOpac').textContent = fmt(v); });
-  on('matFlat', 'change', (e) => { pushUndo(); useMat((m) => { m.flatShading = e.target.checked; }); });
-  on('matWire', 'change', (e) => useMat((m) => { m.wireframe = e.target.checked; }));
-  on('refOpacity', 'input', (e) => { objects.filter((o) => o.userData.isReference).forEach((o) => { o.material.opacity = +e.target.value; }); $('vRef').textContent = fmt(+e.target.value); requestRender(); });
-
-  const sv = (id, out, f) => on(id, 'input', (e) => { $(out).textContent = f(+e.target.value); });
-  sv('sRadius', 'vSR', (v) => fmt(v, 1) + ' mm'); sv('sStrength', 'vSS', (v) => v + '%');
-  on('camZoom', 'input', (e) => { zoomCfg.speed = +e.target.value; $('vZoom').textContent = fmt(+e.target.value); });
-  on('camRot', 'input', (e) => { orbit.rotateSpeed = +e.target.value; $('vRot').textContent = fmt(+e.target.value); });
-  on('camPan', 'input', (e) => { orbit.panSpeed = +e.target.value; $('vPan').textContent = fmt(+e.target.value); });
-  on('camFov', 'input', (e) => { persCam.fov = +e.target.value; persCam.updateProjectionMatrix(); $('vFov').textContent = e.target.value + '°'; requestRender(); });
-  on('camDamp', 'change', (e) => { orbit.enableDamping = e.target.checked; });
-  on('camCursor', 'change', (e) => { zoomCfg.toCursor = e.target.checked; });
-  on('tDims', 'change', (e) => { S.showDims = e.target.checked; requestRender(); });
-  on('tStudio', 'change', (e) => setStudio(e.target.checked));
-  on('tWireAll', 'change', (e) => { S.wireAll = e.target.checked; objects.forEach((o) => { if (o.material && !o.userData.isReference) o.material.wireframe = S.wireAll; }); syncMaterialUI(); requestRender(); });
-
-  ['plateW', 'plateD', 'plateH'].forEach((id) => on(id, 'change', () => {
-    S.plate.w = clamp(num('plateW', 200), 20, 2000); S.plate.d = clamp(num('plateD', 200), 20, 2000); S.plate.h = clamp(num('plateH', 200), 20, 2000);
-    buildPlate(); preciseBox(); doInfo();
-  }));
-  on('tPlate', 'change', (e) => { S.plate.grid = e.target.checked; buildPlate(); });
-  on('tVol', 'change', (e) => { S.plate.vol = e.target.checked; buildPlate(); });
-
-  on('cutAxis', 'change', () => { updateCutRange(); updateCutPreview(); updateXraySection(); });
-  on('cutPos', 'input', (e) => { $('cutPosNum').value = +(+e.target.value).toFixed(2); updateCutPreview(); updateXraySection(); });
-  on('cutPosNum', 'change', (e) => { const v = parseFloat(e.target.value); if (Number.isFinite(v)) { $('cutPos').value = v; updateCutPreview(); updateXraySection(); } });
-  on('xraySection', 'change', updateXraySection);
-
-  on('fileImport', 'change', (e) => { [...e.target.files].forEach(importFile); e.target.value = ''; });
-  on('fileProject', 'change', (e) => { [...e.target.files].forEach(importFile); e.target.value = ''; });
-  on('fileGuide', 'change', (e) => { if (e.target.files[0]) loadGuide(e.target.files[0]); e.target.value = ''; });
-  on('fileRef', 'change', (e) => { if (e.target.files[0]) addReference(e.target.files[0]); e.target.value = ''; });
-
-  on('btnLogin', 'click', () => authDo('login')); on('btnRegister', 'click', () => authDo('register'));
-  on('authPass', 'keydown', (e) => { if (e.key === 'Enter') authDo('login'); });
-  on('btnGoogle', 'click', async () => { if (!fb) return authMsg('Firebase todavía se está conectando.'); try { await fb.authM.signInWithPopup(fb.auth, new fb.authM.GoogleAuthProvider()); } catch (e) { authMsg(friendlyAuthError(e)); } });
-  on('btnReset', 'click', async () => {
-    const email = $('authEmail').value.trim(); if (!fb) return authMsg('Firebase todavía se está conectando.'); if (!email) return authMsg('Escribe tu correo arriba y vuelve a pulsar.');
-    try { await fb.authM.sendPasswordResetEmail(fb.auth, email); authMsg('Te enviamos un correo para restablecer la contraseña.', true); } catch (e) { authMsg(friendlyAuthError(e)); }
-  });
-  document.querySelectorAll('.modal').forEach((m) => m.addEventListener('mousedown', (e) => { if (e.target === m && m.id !== 'authModal') closeModal(m.id); }));
-
-  $('aiKey').value = AI.key; $('aiModel').value = AI.model;
-  ['vZoom', 'vRot', 'vPan'].forEach((id, i) => { $(id).textContent = fmt([0.6, 0.8, 1][i]); }); $('vFov').textContent = '45°';
-  $('vSR').textContent = '8.0 mm'; $('vSS').textContent = '35%'; $('vRef').textContent = '0.50';
-  $('vMetal').textContent = '0.05'; $('vRough').textContent = '0.55'; $('vOpac').textContent = '1.00';
-}
-function init() {
-  buildPlate(); applySnap(); resizeAll(); buildMatPresets(); wireControls();
-  setTab('obj'); setTool('move'); syncHistoryUI(); refreshList(); renderAccess();
-  needCSG();                                           // precarga el motor de booleanas sin bloquear
-  loop();
-  initAccount();
-  readSession().then((d) => { if (d?.objects?.length) toast('Hay una sesión anterior guardada', { ms: 10000, action: { label: 'Restaurar', fn: () => restoreSession(false) } }); });
-  window.__yc_ready = true;
-}
-try { init(); } catch (err) { showError('Error al iniciar: ' + err.message); console.error(err); }
-</script>
-</body>
-</html>
