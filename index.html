@@ -625,6 +625,31 @@ input[type=color]{border-color:#245173}
 
 }
 
+
+/* ---- evitar que las herramientas rápidas interfieran con edición de vértices ---- */
+
+body.yc-edit-active #toolbar .tool{
+  opacity:.35;
+  pointer-events:none;
+}
+
+body.yc-edit-active #toolbar{
+  position:relative;
+}
+
+body.yc-edit-active #toolbar::after{
+  content:'Edición';
+  position:absolute;
+  bottom:7px;
+  left:50%;
+  transform:translateX(-50%) rotate(-90deg);
+  transform-origin:center;
+  color:#d9a441;
+  font:500 8px var(--mono);
+  letter-spacing:.5px;
+  pointer-events:none;
+}
+
 </style>
 </head>
 <body>
@@ -3265,6 +3290,8 @@ function ycStartMeshEdit(){
   );
 
   st.points.renderOrder=1001;
+  document.body.classList.add('yc-edit-active');
+
   st.handle=new THREE.Mesh(
     new THREE.SphereGeometry(1,12,8),
     new THREE.MeshBasicMaterial({
@@ -3317,6 +3344,8 @@ function ycExitMeshEdit(){
     st.handle.material.dispose();
     st.handle=null;
   }
+
+  document.body.classList.remove('yc-edit-active');
 
   st.active=false;
   st.mesh=null;
@@ -3485,9 +3514,26 @@ el.addEventListener('pointercancel',(e)=>{
 window.addEventListener('keydown',(e)=>{
   if(!YC_MESH_EDITOR_BETA.active) return;
 
+  const k=e.key.toLowerCase();
+  const ctrl=e.ctrlKey||e.metaKey;
+
   if(e.key==='Escape'){
     e.preventDefault();
     e.stopImmediatePropagation();
+    ycExitMeshEdit();
+    return;
+  }
+
+  /*
+   * Sale del modo de edición antes de que el teclado del editor
+   * ejecute otra herramienta o una operación de historial.
+   * No bloqueamos la tecla: el listener original podrá ejecutarla
+   * inmediatamente después de salir.
+   */
+  if(
+    (ctrl && ['z','y','d','s','e'].includes(k)) ||
+    (!ctrl && ['q','g','r','s','m','b','x','f','a','o','delete','backspace'].includes(k))
+  ){
     ycExitMeshEdit();
   }
 },true);
