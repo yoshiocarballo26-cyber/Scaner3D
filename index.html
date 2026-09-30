@@ -358,6 +358,21 @@ input[type=color]{border-color:#245173}
   #hint{top:56px}
 }
 
+
+/* ===== NAVEGACIÓN V2 + AVISO LEGAL ===== */
+#tabs{grid-template-columns:repeat(5,1fr)}
+.tab span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+#subtabs{display:none;gap:6px;padding:7px 10px;background:#06111b;border-bottom:1px solid #173b5b}
+#subtabs.open{display:grid;grid-template-columns:1fr 1fr}
+.seg{min-height:34px;border:1px solid #214a69;background:#091725;color:#86a4b8;border-radius:7px;font-size:11.5px;font-weight:500}
+.seg:hover{border-color:#56b9ff;color:#70c9ff}
+.seg.on{border-color:#d9a441;color:#e3bb69;background:rgba(217,164,65,.08)}
+#btnExport{width:auto;flex:none;padding:6px 14px;margin:0 6px}
+.lnk{background:none;border:0;padding:0;color:#61c4ff;text-decoration:underline;font-size:inherit}
+.legal-link{margin-top:10px;font-size:12px;color:var(--mut);text-align:center}
+.legal{max-width:660px}.legal h2{margin:0 0 4px}.legal h3{font-size:13.5px;margin:18px 0 6px;color:var(--text)}
+.legal p,.legal li{color:var(--mut);font-size:12.5px;line-height:1.5}.legal ul{margin:6px 0 10px;padding-left:18px}.legal a{color:#61c4ff}
+@media (max-width:600px){#btnExport{padding:5px 9px;margin:0 3px}}
 </style>
 </head>
 <body>
@@ -445,11 +460,13 @@ input[type=color]{border-color:#245173}
 
     <div class="menu"><button class="menu-btn">Ayuda</button><div class="menu-list">
       <button class="mi" data-act="help">Atajos y ayuda<kbd>?</kbd></button>
+      <button class="mi" data-act="privacy">Aviso de privacidad</button>
     </div></div>
 
     <div class="sp"></div>
     <button class="ib" data-act="undo" title="Deshacer (Ctrl+Z)" id="btnUndo"><svg class="ic"><use href="#i-undo"/></svg></button>
     <button class="ib" data-act="redo" title="Rehacer (Ctrl+Y)" id="btnRedo"><svg class="ic"><use href="#i-redo"/></svg></button>
+    <button class="btn pri sm" id="btnExport" data-act="exportModal" title="Exportar (Ctrl+E)">Exportar</button>
     <div id="acct"><span id="acctText">Modo local</span><button class="ib" id="btnLogout" data-act="logout" title="Cerrar sesión" style="display:none;width:24px;height:24px"><svg class="ic"><use href="#i-lock"/></svg></button></div>
     <button class="ib" id="btnPanel" data-act="togglePanel" title="Mostrar u ocultar panel"><svg class="ic"><use href="#i-panel"/></svg></button>
   </header>
@@ -500,13 +517,13 @@ input[type=color]{border-color:#245173}
 
     <aside id="side">
       <div id="tabs">
-        <button class="tab active" data-act="tab" data-arg="obj"><svg class="ic"><use href="#i-layers"/></svg>Objeto</button>
-        <button class="tab" data-act="tab" data-arg="create"><svg class="ic"><use href="#i-plus"/></svg>Crear</button>
-        <button class="tab" data-act="tab" data-arg="sculpt"><svg class="ic"><use href="#i-sculpt"/></svg>Esculpir</button>
-        <button class="tab" data-act="tab" data-arg="mesh"><svg class="ic"><use href="#i-mesh"/></svg>Malla</button>
-        <button class="tab" data-act="tab" data-arg="measure"><svg class="ic"><use href="#i-ruler"/></svg>Medir</button>
-        <button class="tab" data-act="tab" data-arg="ai"><svg class="ic"><use href="#i-ai"/></svg>IA</button>
+        <button class="tab active" data-act="tab" data-arg="obj"><svg class="ic"><use href="#i-layers"/></svg><span>Propiedades</span></button>
+        <button class="tab" data-act="tab" data-arg="create"><svg class="ic"><use href="#i-plus"/></svg><span>Crear</span></button>
+        <button class="tab" data-act="tab" data-arg="modify"><svg class="ic"><use href="#i-mesh"/></svg><span>Modificar</span></button>
+        <button class="tab" data-act="tab" data-arg="measure"><svg class="ic"><use href="#i-ruler"/></svg><span>Inspeccionar</span></button>
+        <button class="tab" data-act="tab" data-arg="ai"><svg class="ic"><use href="#i-ai"/></svg><span>IA</span></button>
       </div>
+      <div id="subtabs"><button class="seg" data-act="tab" data-arg="sculpt">Esculpir</button><button class="seg on" data-act="tab" data-arg="mesh">Malla / operaciones</button></div>
 
       <!-- ===== OBJETO ===== -->
       <div class="tabpane active" id="pane-obj">
@@ -709,16 +726,11 @@ input[type=color]{border-color:#245173}
           <input type="number" id="hollowWall" value="2" min="0.4" step="0.2">
           <button class="btn sm pri" style="margin-top:8px" data-act="hollow">Vaciar pieza seleccionada</button>
           <button class="btn sm" style="margin-top:6px" data-act="drainHole">Agregar agujero de drenado</button>
-          <p class="note">Crea una cavidad interior a esa distancia de la superficie y resta el material sobrante: ahorra resina/filamento y reduce presión interna al curar. Necesita malla cerrada (revisa “Malla” en el panel Medir); en formas muy cóncavas el resultado puede no quedar perfecto — vuelve a revisar con la Regla antes de imprimir.</p>
+          <p class="note">Crea una cavidad interior a esa distancia de la superficie y resta el material sobrante: ahorra resina/filamento y reduce presión interna al curar. Necesita malla cerrada (revisa “Malla” en Inspeccionar); en formas muy cóncavas el resultado puede no quedar perfecto — vuelve a revisar con la Regla antes de imprimir.</p>
           <p class="note">El agujero de drenado crea un cilindro rojo que puedes mover, rotar y escalar (como la caja de corte); cuando atraviese la pared, usa “Restar de la pieza” arriba (Caja de corte) para aplicarlo. Deja salir la resina o el polvo atrapado dentro de una pieza vaciada.</p>
         </div></details>
 
-        <details class="sec" open><summary>Diagnóstico de malla</summary><div class="body">
-          <button class="btn sm pri" data-act="meshDiagnostics">Analizar pieza seleccionada</button>
-          <div id="meshDiag" class="note" style="margin-top:8px">Selecciona una pieza y pulsa Analizar.</div>
-          <p class="note">Comprueba geometría válida, triángulos degenerados, vértices repetidos, bordes abiertos/no-manifold, volumen y cierre. No modifica la pieza.</p>
-        </div></details>
-
+        
         <details class="sec"><summary>Reparar y optimizar</summary><div class="body">
           <div class="row"><input type="number" id="weldTol" value="0.01" step="0.01" min="0.0001" title="Tolerancia en mm"><button class="btn sm" data-act="weld">Soldar vértices</button></div>
           <div class="g2"><button class="btn sm" data-act="flip">Invertir normales</button><button class="btn sm" data-act="bakeScale">Fijar escala</button></div>
@@ -749,6 +761,11 @@ input[type=color]{border-color:#245173}
           <div class="kv"><span>Triángulos</span><span id="mdTris">—</span></div>
           <div class="kv"><span>Malla</span><span id="mdWater">—</span></div>
           <div class="kv"><span>Plataforma</span><span id="mdFit">—</span></div>
+        </div></details>
+        <details class="sec" open><summary>Diagnóstico de malla</summary><div class="body">
+          <button class="btn sm pri" data-act="meshDiagnostics">Analizar pieza seleccionada</button>
+          <div id="meshDiag" class="note" style="margin-top:8px">Selecciona una pieza y pulsa Analizar.</div>
+          <p class="note">Comprueba geometría válida, triángulos degenerados, vértices repetidos, bordes abiertos/no-manifold, volumen y cierre. No modifica la pieza.</p>
         </div></details>
         <details class="sec"><summary>Plataforma de impresión</summary><div class="body">
           <span class="lab" style="margin-top:0">Ancho, fondo y alto útil (mm)</span>
@@ -810,6 +827,7 @@ input[type=color]{border-color:#245173}
   <button class="btn" id="btnGoogle">Continuar con Google</button>
   <button class="btn sm" id="btnReset" style="margin-top:8px;border-color:transparent;color:var(--mut)">Olvidé mi contraseña</button>
   <div class="msg" id="authMsg"></div>
+  <div class="legal-link">Consulta el <button class="lnk" data-act="privacy">Aviso de privacidad</button></div>
 </div></div>
 
 <div class="modal" id="payModal"><div class="card">
@@ -831,7 +849,7 @@ input[type=color]{border-color:#245173}
   <h2>Atajos y ayuda</h2>
 
   <p style="margin:12px 0 4px;font-weight:600;color:var(--text)">Inicio rápido</p>
-  <p class="note" style="margin:0 0 4px">1) Crea una forma o importa un STL guía desde la pestaña “Crear”. 2) Edítala: mover/rotar/escalar, esculpir, cortar o combinar piezas. 3) Revisa el panel “Medir” (tamaño y si la malla está cerrada). 4) Exporta desde Archivo → Exportar.</p>
+  <p class="note" style="margin:0 0 4px">1) Crea una forma o importa un STL guía desde la pestaña “Crear”. 2) Edítala: mover/rotar/escalar, esculpir, cortar o combinar piezas. 3) Revisa “Inspeccionar” (tamaño, diagnóstico y si la malla está cerrada). 4) Exporta desde Archivo → Exportar.</p>
 
   <p style="margin:14px 0 4px;font-weight:600;color:var(--text)">Glosario corto</p>
   <table class="keys">
@@ -844,8 +862,8 @@ input[type=color]{border-color:#245173}
 
   <p style="margin:14px 0 4px;font-weight:600;color:var(--text)">Problemas comunes</p>
   <table class="keys">
-    <tr><td>Falla una booleana o vaciar</td><td>Selecciona la pieza, ve a Malla → “Soldar vértices” y vuelve a intentar</td></tr>
-    <tr><td>La pieza sale roja</td><td>No cabe en la plataforma de impresión; ajusta el tamaño o cambia las medidas de la plataforma en “Medir”</td></tr>
+    <tr><td>Falla una booleana o vaciar</td><td>Selecciona la pieza, ve a Modificar → Malla / operaciones → “Soldar vértices” y vuelve a intentar</td></tr>
+    <tr><td>La pieza sale roja</td><td>No cabe en la plataforma de impresión; ajusta el tamaño o cambia las medidas de la plataforma en “Inspeccionar”</td></tr>
     <tr><td>No pasa nada al exportar</td><td>Revisa el estado de la cuenta arriba a la derecha (prueba/plan) y que haya al menos una pieza visible</td></tr>
   </table>
 
@@ -865,6 +883,84 @@ input[type=color]{border-color:#245173}
   </table>
   <p style="margin-top:12px">Unidad de trabajo: 1 unidad = 1 mm. El STL exportado ya sale con Z hacia arriba.</p>
   <button class="btn" data-act="closeModal" data-arg="helpModal">Cerrar</button>
+</div></div>
+
+<div class="modal" id="privacyModal"><div class="card legal">
+<h2>Aviso de privacidad integral</h2>
+<p>Última actualización: 29 de septiembre de 2026</p>
+<p>El presente Aviso de Privacidad establece la forma en que Yoshio Rafael Carballo Villanueva, en adelante “el Responsable”, recaba, utiliza, almacena, protege y, cuando resulte necesario, comunica datos personales relacionados con el uso de YC Editor 3D y del sitio web mediante el cual actualmente se proporciona dicho servicio: web.app</p>
+<p>El tratamiento de sus datos personales se realizará bajo los principios de licitud, consentimiento, información, calidad, finalidad, lealtad, proporcionalidad y responsabilidad, de estricta conformidad con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP), su Reglamento, y los Lineamientos del Aviso de Privacidad emitidos por el INAI.</p>
+<h3>1. IDENTIDAD Y DOMICILIO DEL RESPONSABLE</h3>
+<ul>
+<li><p>Nombre del Responsable: Yoshio Rafael Carballo Villanueva</p></li>
+<li><p>Domicilio: C Nogal 8, Col. Torreón Nuevo, C.P. 58116, Morelia, Michoacán, México.</p></li>
+<li><p>Correo electrónico oficial (Datos Personales y Derechos ARCO): yc.suite.administrador@gmail.com</p></li>
+<li><p>Teléfono de contacto: +52 5649268628</p></li>
+</ul>
+<h3>2. DATOS PERSONALES QUE SE RECABAN</h3>
+<p>De acuerdo con las funciones de diseño que usted utilice, el Responsable tratará las siguientes categorías de datos personales:</p>
+<ul>
+<li><p>2.1 Datos de Cuenta y Autenticación: Dirección de correo electrónico, identificador único de usuario (UID) e información técnica provista por Google en caso de utilizar su sistema de autenticación (Google Sign-In).</p></li>
+<li><p>2.2 Datos Técnicos de Conexión: Tipo de dispositivo, sistema operativo, tipo de navegador, registros de errores de la consola y, de forma obligatoria para la seguridad del entorno, su dirección IP.</p></li>
+<li><p>2.3 Proyectos y Modelos 3D: Mallas tridimensionales, geometrías, dimensiones físicas, texturas, materiales, nombres asignados a los proyectos e imágenes de referencia cargadas voluntariamente. Se exhorta al usuario a no incorporar datos personales innecesarios dentro de los archivos tridimensionales.</p></li>
+</ul>
+<h3>3. FINALIDADES DEL TRATAMIENTO DE LOS DATOS</h3>
+<p>De conformidad con la legislación mexicana, dividimos el uso de sus datos en dos categorías:</p>
+<h3>A. Finalidades Primarias (Esenciales para el servicio)</h3>
+<p>Estas finalidades dan origen y son necesarias para la relación jurídica entre usted y el Responsable:</p>
+<ul>
+<li><p>Crear, administrar y validar su cuenta de usuario.</p></li>
+<li><p>Proporcionar el entorno operativo y las herramientas de diseño de YC Editor 3D.</p></li>
+<li><p>Permitir el almacenamiento local mediante tecnologías del navegador (Local Storage e IndexedDB) y almacenamiento en servidores en la nube cuando corresponda.</p></li>
+<li><p>Atender reportes de soporte técnico, identificar bugs y corregir fallas en el software.</p></li>
+<li><p>Garantizar la seguridad del sitio web y prevenir accesos fraudulentos o malintencionados.</p></li>
+<li><p>Procesar cobros de suscripción y gestionar los accesos a los planes de servicio de pago.</p></li>
+</ul>
+<h3>B. Finalidades Secundarias (Accesorias u Opcionales)</h3>
+<p>Uso de datos que no es estrictamente necesario para el funcionamiento del editor de diseño:</p>
+<ul>
+<li>Mostrar publicidad personalizada a través de la plataforma de Google AdSense utilizando cookies publicitarias de terceros.</li>
+</ul>
+<p>Mecanismo de Negativa para Finalidades Secundarias: Si usted no desea que sus datos personales sean utilizados para mostrarle publicidad personalizada, puede manifestar su negativa enviando un correo electrónico a: yc.suite.administrador@gmail.com. Negar este consentimiento no limitará en absoluto el uso de las funciones de diseño en la app.</p>
+<h3>4. USO DE INTELIGENCIA ARTIFICIAL (GOOGLE GEMINI API)</h3>
+<p>Con fundamento en los artículos 12 y 13 de la LFPDPPP, se informa que YC Editor 3D cuenta con funciones avanzadas impulsadas por la Inteligencia Artificial de Google Gemini.</p>
+<ul>
+<li><p>¿Cómo viajan los datos?: Cuando el usuario interactúa voluntariamente con las casillas de "Diseñar con IA", los textos descritos, imágenes o bocetos provistos serán enviados mediante Webhooks protegidos directamente a la API de Google.</p></li>
+<li><p>Garantía de privacidad de IA: El Responsable aclara que los datos enviados a través de esta API dedicada a desarrolladores no se guardan en servidores del Responsable ni se usan de forma pública para el entrenamiento general de la Inteligencia Artificial. No obstante, queda estrictamente prohibido que el usuario introduzca datos sensibles, contraseñas o datos de identificación de terceros en los campos de texto de la IA.</p></li>
+</ul>
+<h3>5. TRANSFERENCIAS INTERNACIONALES DE DATOS Y PASARELAS DE PAGO</h3>
+<p>Para poder ofrecer disponibilidad global, el Responsable realiza transferencias de datos que no requieren de su consentimiento explícito de conformidad con el Artículo 37, fracciones IV y VII de la LFPDPPP, debido a que son indispensables para el mantenimiento del servicio. Los terceros receptores son:</p>
+<ul>
+<li><p>Google LLC / Firebase: Infraestructura en la nube, servidores de hosting y base de datos localizados fuera de territorio mexicano (Estados Unidos).</p></li>
+<li><p>Streach de Pagos Encriptados (Stripe y PayPal Inc.): Cuando la persona usuaria opta por adquirir el Plan Completo, el procesamiento del pago se delega por completo a servidores externos cifrados bajo los estándares PCI-DSS de Stripe y/o PayPal. El Responsable no recopila ni almacena información bancaria sensible, números de tarjeta o claves de seguridad.</p></li>
+</ul>
+<h3>6. PROPIEDAD INTELECTUAL Y CONFIDENCIALIDAD DE LOS DISEÑOS 3D</h3>
+<p>De acuerdo con las leyes federales de propiedad intelectual aplicables, el Responsable reconoce y garantiza que el usuario conserva la propiedad exclusiva, los derechos morales y patrimoniales de autor sobre todas las mallas, códigos y archivos 3D originales que cree, edite o diseñe en YC Editor 3D.</p>
+<ul>
+<li><p>Tratamiento cerrado: La plataforma procesa dichos archivos únicamente para ejecutar las funciones de renderizado, cálculo de mallas y exportación en el dispositivo del usuario o mediante las transferencias tecnológicas aquí descritas.</p></li>
+<li><p>El Responsable no se adjudica ningún derecho comercial sobre los archivos creados ni los utilizará para fines publicitarios, exposición pública o distribución a terceros sin el consentimiento expreso y por escrito del titular del proyecto.</p></li>
+</ul>
+<h3>7. PLAZOS DE CONSERVACIÓN DE LA INFORMACIÓN</h3>
+<p>Sus datos personales de cuenta e historial se conservarán únicamente durante el tiempo que su cuenta permanezca activa. Si una cuenta permanece inactiva por un periodo continuo de 12 meses, el Responsable procederá al borrado seguro, definitivo e irreversible de la cuenta y de todos los proyectos 3D vinculados a ella en la nube, a menos que exista una obligación legal de retención según la ley fiscal o civil aplicable.</p>
+<h3>8. MEDIOS PARA EJERCER LOS DERECHOS ARCO Y REVOCACIÓN DEL CONSENTIMIENTO</h3>
+<p>De conformidad con el Capítulo IV de la LFPDPPP, usted tiene el derecho constitucional de Acceder, Rectificar, Cancelar u Oponerse al uso de sus datos personales, así como revocar el consentimiento previamente otorgado.</p>
+<h3>Procedimiento de Solicitud:</h3>
+<p>Deberá enviar una solicitud formal por escrito al correo electrónico: yc.suite.administrador@gmail.com con los siguientes requisitos básicos:</p>
+<ul>
+<li><p>Nombre completo del titular y correo electrónico enlazado a la cuenta de la app.</p></li>
+<li><p>Documento digital para acreditar su identidad (Copia legible de INE o Pasaporte).</p></li>
+<li><p>Descripción clara del derecho que desea ejercer (Acceso, Rectificación, Cancelación u Oposición) y los datos específicos involucrados.</p></li>
+</ul>
+<h3>Plazos de Respuesta (Artículo 32 de la Ley):</h3>
+<p>El Responsable le enviará una respuesta oficial en un plazo máximo de 20 días hábiles contados desde la fecha de recepción de su correo. Si la solicitud es procedente, se hará efectiva dentro de los 15 días hábiles siguientes. La respuesta e información de acceso se entregarán de forma gratuita en formato digital (PDF o texto plano).</p>
+<h3>9. ENLACES A POLÍTICAS DE TERCEROS RELEVANTES</h3>
+<p>El usuario puede gestionar los rastreos de las cookies publicitarias directamente en los centros de control de los proveedores de servicios integrados en esta web:</p>
+<ul>
+<li><p>Configuración de anuncios de Google: google.com</p></li>
+<li><p>Exclusión voluntaria de publicidad de la DAA: <a target="_blank" rel="noopener" href="https://www.aboutads.info/">aboutads.info</a></p></li>
+</ul>
+
+<button class="btn" style="margin-top:14px" data-act="closeModal" data-arg="privacyModal">Cerrar</button>
 </div></div>
 
 <div id="fatal"><div><h2>No se pudo iniciar el editor 3D</h2><p style="color:var(--mut)">Las librerías 3D se cargan desde internet. Revisa tu conexión y abre la página desde un servidor (<code>python3 -m http.server 8080</code>) o desde GitHub Pages, no como archivo suelto.</p><button class="btn" onclick="location.reload()" style="max-width:200px;margin:12px auto">Reintentar</button></div></div>
@@ -1544,14 +1640,20 @@ const HINTS = {
   select: 'Seleccionar: toca una pieza. Arrastra en el vacío para girar la cámara.',
   move: 'Mover: toca una pieza y arrastra las flechas. Doble clic centra la cámara.',
   rotate: 'Rotar: toca una pieza y arrastra los aros.',
-  scale: 'Escalar: arrastra los cubos del gizmo, o escribe el tamaño exacto en el panel Objeto.',
+  scale: 'Escalar: arrastra los cubos del gizmo, o escribe el tamaño exacto en Propiedades.',
   measure: 'Regla: toca dos puntos de la pieza. Esc para salir.',
   sculpt: 'Pincel: arrastra sobre la pieza (Alt hunde). Shift + arrastrar mueve la cámara.',
   cut: 'Corte: ajusta el plano en el panel Malla y pulsa “Aplicar corte”.',
 };
+let lastModify = 'mesh';
 function setTab(n) {
+  if (n === 'modify') n = lastModify;
+  if (n === 'sculpt' || n === 'mesh') lastModify = n;
   activeTab = n;
-  document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.arg === n));
+  const grp = (n === 'sculpt' || n === 'mesh') ? 'modify' : n;
+  document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.arg === grp));
+  document.querySelectorAll('#subtabs .seg').forEach((b) => b.classList.toggle('on', b.dataset.arg === n));
+  $('subtabs')?.classList.toggle('open', grp === 'modify');
   document.querySelectorAll('.tabpane').forEach((p) => p.classList.toggle('active', p.id === 'pane-' + n));
   if (n === 'mesh') updateCutRange();
   updateCutPreview();
@@ -2232,7 +2334,7 @@ function addReference(file) {
     if (plane === 'front') m.position.set(0, h / 2, 0);
     else if (plane === 'side') { m.rotation.y = Math.PI / 2; m.position.set(0, h / 2, 0); }
     else { m.rotation.x = -Math.PI / 2; m.position.set(0, 0.1, 0); }
-    pushUndo(); addObject(m); toast('Referencia agregada. Muévela y escálala con el gizmo o el panel Objeto.', { type: 'ok' });
+    pushUndo(); addObject(m); toast('Referencia agregada. Muévela y escálala con el gizmo o en Propiedades.', { type: 'ok' });
     URL.revokeObjectURL(url);
   }, undefined, () => showError('No se pudo leer la imagen'));
 }
@@ -2524,8 +2626,8 @@ const A = {
   tool: (a) => setTool(a), tab(a) { setTab(a); if (innerWidth <= 900) $('side').classList.add('open'); },
   view: (a) => setView(a), toggleOrtho() { setOrtho(!S.ortho); }, focus() { selected && !selBox.isEmpty() ? frameBox(selBox) : frameAll(); }, focusAll: frameAll,
   camPanel() { $('camPanel').classList.toggle('open'); }, togglePanel() { $('side').classList.toggle('open'); },
-  help() { openModal('helpModal'); }, closeModal: (a) => closeModal(a),
-  floor: floorSel, centerOrigin, centerPivot, resetRot, mirror: (a) => mirrorSelected(a), arrayLinear, arrayCircular, alignTo: alignSelected,
+  help() { openModal('helpModal'); }, privacy() { openModal('privacyModal'); }, closeModal: (a) => closeModal(a),
+  floor: floorSel, centerOrigin, centerPivot, resetRot, mirror: (a) => mirrorSelected(a), arrayLinear, arrayCircular, alignTo: alignSelected, surfaceSnapNow: surfaceSnapSelected,
   sculptMode(a) { sculpt.mode = a; document.querySelectorAll('[data-act="sculptMode"]').forEach((b) => b.classList.toggle('on', b.dataset.arg === a)); },
   subdivide: subdivideSelected, weld: weldSelected, flip: flipSelected, bakeScale: bakeScaleSelected, smoothMesh: smoothSelected, simplify: simplifySelected,
   taper: taperSelected, twist: twistSelected, bend: bendSelected,
@@ -2571,7 +2673,7 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'delete' || k === 'backspace') { if (selected) { e.preventDefault(); deleteObject(selected); } }
   else if (k === '?') openModal('helpModal');
   else if (k === 'escape') {
-    const open = document.querySelector('.modal.open'); if (open && open.id !== 'authModal') return closeModal(open.id);
+    const opens = [...document.querySelectorAll('.modal.open')].filter((m) => m.id !== 'authModal'), open = opens[opens.length - 1]; if (open) return closeModal(open.id);
     if (['measure', 'sculpt', 'cut'].includes(S.tool)) setTool('move'); else deselect();
   }
 });
