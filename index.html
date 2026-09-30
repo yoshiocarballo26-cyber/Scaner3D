@@ -3299,12 +3299,14 @@ function ycStartMeshEdit(){
 
 function ycExitMeshEdit(){
   const st=YC_MESH_EDITOR_BETA;
+  if(!st.active) return;
 
   st.dragging=false;
   orbit.enabled=true;
 
   if(st.points){
     scene.remove(st.points);
+    st.points.material?.dispose();
     st.points.geometry=null;
     st.points=null;
   }
@@ -3402,7 +3404,6 @@ function ycMoveVertex(e){
 
   st.mesh.geometry.computeBoundingBox();
   st.mesh.geometry.computeBoundingSphere();
-  st.mesh.geometry.computeVertexNormals();
 
   ycUpdateVertexHandle();
   fastBox();
@@ -3502,7 +3503,7 @@ function ycRepairSelected(){
   if(o.userData.locked) return toast('La pieza está bloqueada.',{type:'warn'});
 
   const tris=triCount(o.geometry);
-  if(tris>500000)
+  if(tris>300000)
     return toast('Malla demasiado grande para reparación automática en este equipo. Simplifica primero.',{type:'warn'});
 
   ycExitMeshEdit();
@@ -3579,7 +3580,7 @@ async function ycSeparateComponents(){
   ycExitMeshEdit();
 
   const tris=triCount(o.geometry);
-  if(tris>180000)
+  if(tris>100000)
     return toast('Malla demasiado grande para separar componentes con seguridad. Simplifica primero.',{type:'warn'});
 
   busy(true,'Buscando componentes desconectados…');
