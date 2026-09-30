@@ -373,6 +373,258 @@ input[type=color]{border-color:#245173}
 .legal{max-width:660px}.legal h2{margin:0 0 4px}.legal h3{font-size:13.5px;margin:18px 0 6px;color:var(--text)}
 .legal p,.legal li{color:var(--mut);font-size:12.5px;line-height:1.5}.legal ul{margin:6px 0 10px;padding-left:18px}.legal a{color:#61c4ff}
 @media (max-width:600px){#btnExport{padding:5px 9px;margin:0 3px}}
+
+/* ============================================================
+   YC ARCHITECTURE V2 — reorganización visual segura
+   ============================================================ */
+
+#main{
+  grid-template-columns:64px 1fr 356px;
+}
+
+#toolbar{
+  align-items:center;
+  padding:10px 7px;
+  gap:5px;
+}
+
+#toolbar .tool{
+  width:44px;
+  height:42px;
+  justify-content:center;
+  padding:0;
+}
+
+#toolbar .tool::after{
+  display:none !important;
+}
+
+/* ---- navegación principal nueva ---- */
+
+#yc-workbench{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  width:100%;
+  flex:none;
+  background:linear-gradient(180deg,#071421,#06101a);
+  border-bottom:1px solid #173b5b;
+}
+
+.yc-wb-btn{
+  min-width:0;
+  min-height:58px;
+  border:0;
+  border-right:1px solid rgba(36,81,115,.45);
+  background:transparent;
+  color:#7895aa;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:5px;
+  padding:6px 3px;
+  cursor:pointer;
+  position:relative;
+  transition:background .15s ease,color .15s ease;
+}
+
+.yc-wb-btn:last-child{
+  border-right:0;
+}
+
+.yc-wb-btn .ic{
+  width:18px;
+  height:18px;
+}
+
+.yc-wb-btn span{
+  font-size:10px;
+  font-weight:500;
+  line-height:1;
+  white-space:nowrap;
+}
+
+.yc-wb-btn:hover{
+  background:#0b2032;
+  color:#dcecf8;
+}
+
+.yc-wb-btn.active{
+  color:#61c4ff;
+  background:rgba(49,137,201,.10);
+}
+
+.yc-wb-btn.active::after{
+  content:'';
+  position:absolute;
+  left:14%;
+  right:14%;
+  bottom:0;
+  height:2px;
+  border-radius:2px 2px 0 0;
+  background:#56b9ff;
+  box-shadow:0 0 8px rgba(86,185,255,.45);
+}
+
+/* ---- subnavegación de Modificar ---- */
+
+#yc-modify-sub{
+  display:none;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+  padding:7px 9px;
+  background:#06111b;
+  border-bottom:1px solid #173b5b;
+}
+
+#yc-modify-sub.open{
+  display:grid;
+}
+
+.yc-sub-btn{
+  min-height:34px;
+  border:1px solid #214a69;
+  background:#091725;
+  color:#86a4b8;
+  border-radius:7px;
+  cursor:pointer;
+  font-size:10px;
+  font-weight:500;
+}
+
+.yc-sub-btn:hover{
+  border-color:#56b9ff;
+  color:#70c9ff;
+  background:#0c2133;
+}
+
+.yc-sub-btn.active{
+  border-color:#d9a441;
+  color:#e3bb69;
+  background:rgba(217,164,65,.08);
+}
+
+/* ---- pestañas originales: siguen presentes para compatibilidad,
+       pero la nueva navegación es la visible ---- */
+
+#tabs{
+  display:none !important;
+}
+
+/* ---- nueva hoja de edición de vértices ---- */
+
+#pane-editmesh{
+  display:none;
+}
+
+#pane-editmesh.active{
+  display:block;
+}
+
+.yc-beta{
+  display:inline-block;
+  margin-left:auto;
+  padding:2px 5px;
+  border:1px solid #7b6127;
+  border-radius:4px;
+  color:#d9a441;
+  font:500 9px var(--mono);
+}
+
+.yc-tool-note{
+  margin:8px 0 0;
+  padding:8px 9px;
+  border-radius:7px;
+  background:rgba(54,169,255,.055);
+  border:1px solid rgba(54,169,255,.14);
+  color:#86a4b8;
+  font-size:11px;
+}
+
+.yc-danger-note{
+  border-color:rgba(217,164,65,.18);
+  background:rgba(217,164,65,.045);
+}
+
+#yc-edit-stats{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:7px;
+  color:#62c5ff;
+  font:11px var(--mono);
+}
+
+#yc-edit-stats span{
+  white-space:nowrap;
+}
+
+/* ---- botones nuevos ---- */
+
+.yc-feature-btn{
+  width:100%;
+  min-height:36px;
+  margin-top:6px;
+  border:1px solid #285a79;
+  border-radius:8px;
+  background:#091725;
+  color:#c5d8e4;
+  cursor:pointer;
+  font-size:11px;
+  font-weight:500;
+}
+
+.yc-feature-btn:hover{
+  border-color:#56b9ff;
+  color:#79d1ff;
+  background:#0c2133;
+}
+
+.yc-feature-btn.pri{
+  border-color:#d9a441;
+  color:#e3bb69;
+  background:rgba(217,164,65,.08);
+}
+
+.yc-feature-btn.pri:hover{
+  background:rgba(217,164,65,.15);
+}
+
+/* ---- móviles ---- */
+
+@media(max-width:900px){
+
+  #main{
+    grid-template-columns:52px 1fr;
+  }
+
+  #toolbar{
+    padding:8px 6px;
+  }
+
+  #toolbar .tool{
+    width:40px;
+    height:40px;
+  }
+
+  #yc-workbench{
+    min-height:50px;
+  }
+
+  .yc-wb-btn{
+    min-height:50px;
+  }
+
+  .yc-wb-btn span{
+    font-size:9px;
+  }
+
+  #yc-modify-sub{
+    padding:6px 7px;
+  }
+
+}
+
 </style>
 </head>
 <body>
@@ -2760,6 +3012,868 @@ function init() {
   window.__yc_ready = true;
 }
 try { init(); } catch (err) { showError('Error al iniciar: ' + err.message); console.error(err); }
+
+/* ============================================================
+   YC ARCHITECTURE V2
+   Navegación contextual + nuevas herramientas de malla
+   ============================================================ */
+
+const YC_MESH_EDITOR_BETA = {
+  active:false,
+  mesh:null,
+  points:null,
+  handle:null,
+  index:-1,
+  dragging:false,
+  moved:false,
+  undoSaved:false,
+  plane:new THREE.Plane(),
+  startWorld:new THREE.Vector3(),
+  startLocal:new THREE.Vector3()
+};
+
+function ycSafeFeatureButton(label, action, primary=false){
+  const b=document.createElement('button');
+  b.type='button';
+  b.className='yc-feature-btn' + (primary ? ' pri' : '');
+  b.textContent=label;
+  b.addEventListener('click',()=>Promise.resolve().then(action).catch(err=>showError(err?.message||String(err))));
+  return b;
+}
+
+function ycCreateNavigation(){
+  const side=$('side');
+  const oldTabs=$('tabs');
+  if(!side || !oldTabs || $('yc-workbench')) return;
+
+  const wb=document.createElement('div');
+  wb.id='yc-workbench';
+  wb.innerHTML=`
+    <button type="button" class="yc-wb-btn" data-yc-main="obj" title="Escena, propiedades y transformaciones">
+      <svg class="ic"><use href="#i-layers"></use></svg>
+      <span>Propiedades</span>
+    </button>
+
+    <button type="button" class="yc-wb-btn" data-yc-main="create" title="Crear piezas, texto y referencias">
+      <svg class="ic"><use href="#i-plus"></use></svg>
+      <span>Crear</span>
+    </button>
+
+    <button type="button" class="yc-wb-btn" data-yc-modify="1" title="Modificar geometría">
+      <svg class="ic"><use href="#i-mesh"></use></svg>
+      <span>Modificar</span>
+    </button>
+
+    <button type="button" class="yc-wb-btn" data-yc-main="measure" title="Medir, revisar y preparar impresión">
+      <svg class="ic"><use href="#i-ruler"></use></svg>
+      <span>Inspeccionar</span>
+    </button>
+
+    <button type="button" class="yc-wb-btn" data-yc-main="ai" title="Asistente de IA">
+      <svg class="ic"><use href="#i-ai"></use></svg>
+      <span>IA</span>
+    </button>
+  `;
+
+  const sub=document.createElement('div');
+  sub.id='yc-modify-sub';
+  sub.innerHTML=`
+    <button type="button" class="yc-sub-btn" data-yc-sub="sculpt">Esculpir</button>
+    <button type="button" class="yc-sub-btn" data-yc-sub="mesh">Malla</button>
+    <button type="button" class="yc-sub-btn" data-yc-sub="editmesh">Editar malla</button>
+  `;
+
+  side.insertBefore(wb,oldTabs);
+  side.insertBefore(sub,oldTabs);
+
+  const editPane=document.createElement('div');
+  editPane.className='tabpane';
+  editPane.id='pane-editmesh';
+  editPane.innerHTML=`
+    <details class="sec" open>
+      <summary>
+        Edición local
+        <span class="yc-beta">BETA</span>
+      </summary>
+      <div class="body">
+        <button type="button" id="yc-edit-toggle" class="yc-feature-btn pri">Activar edición de vértices</button>
+
+        <div id="yc-edit-stats">
+          <span>Vértices: —</span>
+          <span>Estado: inactivo</span>
+        </div>
+
+        <div class="yc-tool-note">
+          Convierte la pieza a una malla soldada y permite seleccionar un vértice directamente en el visor y arrastrarlo.
+          Se conserva en el historial con Deshacer.
+        </div>
+
+        <div class="yc-tool-note yc-danger-note">
+          Esta primera versión edita vértices completos. La edición independiente de caras y aristas queda separada para una etapa posterior.
+        </div>
+      </div>
+    </details>
+
+    <details class="sec" open>
+      <summary>Preparación de malla</summary>
+      <div class="body">
+        <button type="button" id="yc-repair-btn" class="yc-feature-btn">
+          Reparar malla
+        </button>
+
+        <button type="button" id="yc-separate-btn" class="yc-feature-btn">
+          Separar componentes
+        </button>
+
+        <div class="yc-tool-note">
+          “Reparar” hace una limpieza conservadora: une vértices repetidos, elimina triángulos degenerados y recalcula normales.
+          No rellena agujeros automáticamente.
+        </div>
+      </div>
+    </details>
+  `;
+
+  side.appendChild(editPane);
+
+  const navButtons=[...wb.querySelectorAll('.yc-wb-btn')];
+
+  function sync(){
+    const current=activeTab;
+
+    navButtons.forEach(b=>b.classList.remove('active'));
+    sub.querySelectorAll('.yc-sub-btn').forEach(b=>b.classList.remove('active'));
+    sub.classList.remove('open');
+
+    if(current==='obj' || current==='create' || current==='measure' || current==='ai'){
+      wb.querySelector('[data-yc-main="'+current+'"]')?.classList.add('active');
+      return;
+    }
+
+    if(current==='sculpt' || current==='mesh' || current==='editmesh'){
+      wb.querySelector('[data-yc-modify]')?.classList.add('active');
+      sub.classList.add('open');
+      sub.querySelector('[data-yc-sub="'+current+'"]')?.classList.add('active');
+    }
+  }
+
+  function openTab(name){
+    if(name==='editmesh'){
+      setTab('editmesh');
+    }else{
+      setTab(name);
+    }
+    sync();
+  }
+
+  wb.querySelectorAll('[data-yc-main]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      if(YC_MESH_EDITOR_BETA.active) ycExitMeshEdit();
+      openTab(b.dataset.ycMain);
+    });
+  });
+
+  wb.querySelector('[data-yc-modify]')?.addEventListener('click',()=>{
+    if(YC_MESH_EDITOR_BETA.active) ycExitMeshEdit();
+
+    if(['sculpt','mesh','editmesh'].includes(activeTab)){
+      sub.classList.toggle('open');
+    }else{
+      openTab('mesh');
+    }
+    sync();
+  });
+
+  sub.querySelectorAll('[data-yc-sub]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      if(b.dataset.ycSub!=='editmesh' && YC_MESH_EDITOR_BETA.active) ycExitMeshEdit();
+      openTab(b.dataset.ycSub);
+    });
+  });
+
+  const mo=new MutationObserver(sync);
+  mo.observe(oldTabs,{subtree:true,attributes:true,attributeFilter:['class']});
+
+  sync();
+}
+
+
+/* ============================================================
+   EDICIÓN DE VÉRTICES
+   ============================================================ */
+
+function ycEditStats(){
+  const e=$('yc-edit-stats');
+  if(!e) return;
+
+  if(!YC_MESH_EDITOR_BETA.mesh){
+    e.innerHTML='<span>Vértices: —</span><span>Estado: inactivo</span>';
+    return;
+  }
+
+  const n=YC_MESH_EDITOR_BETA.mesh.geometry?.attributes?.position?.count||0;
+  e.innerHTML='<span>Vértices: '+n.toLocaleString('es')+'</span><span>Estado: '+(YC_MESH_EDITOR_BETA.active?'activo':'inactivo')+'</span>';
+}
+
+function ycUpdateVertexHandle(){
+  const st=YC_MESH_EDITOR_BETA;
+  if(!st.active || !st.mesh || !st.handle || st.index<0){
+    if(st.handle) st.handle.visible=false;
+    return;
+  }
+
+  const p=st.mesh.geometry.attributes.position;
+  const local=new THREE.Vector3().fromBufferAttribute(p,st.index);
+  const world=st.mesh.localToWorld(local.clone());
+
+  st.handle.position.copy(world);
+  st.handle.scale.setScalar(Math.max(0.7,pxScale(world)*7));
+  st.handle.visible=true;
+}
+
+function ycStartMeshEdit(){
+  const o=needMesh();
+  if(!o || o.userData.kind==='cutter') return;
+  if(o.userData.locked) return toast('La pieza está bloqueada.',{type:'warn'});
+
+  if(triCount(o.geometry)>180000)
+    return toast('Esta malla es demasiado grande para la edición de vértices en este equipo. Simplifica primero.',{type:'warn'});
+
+  if(YC_MESH_EDITOR_BETA.active) return;
+
+  pushUndo();
+
+  const g=weldedCopy(o.geometry,1e-4);
+  g.computeVertexNormals();
+  g.computeBoundingBox();
+  g.computeBoundingSphere();
+
+  o.geometry=g;
+
+  const st=YC_MESH_EDITOR_BETA;
+  st.active=true;
+  st.mesh=o;
+  st.points=new THREE.Points(
+    g,
+    new THREE.PointsMaterial({
+      color:0xffd166,
+      size:7,
+      sizeAttenuation:false,
+      depthTest:false,
+      transparent:true,
+      opacity:.9
+    })
+  );
+
+  st.points.renderOrder=1001;
+  st.handle=new THREE.Mesh(
+    new THREE.SphereGeometry(1,12,8),
+    new THREE.MeshBasicMaterial({
+      color:0xffffff,
+      depthTest:false,
+      transparent:true,
+      opacity:.98
+    })
+  );
+
+  st.handle.renderOrder=1002;
+  st.index=-1;
+  st.dragging=false;
+  st.moved=false;
+  st.undoSaved=false;
+
+  scene.add(st.points,st.handle);
+
+  S.tool='select';
+  transform.detach();
+  orbit.enabled=true;
+
+  onGeometryChanged();
+  ycEditStats();
+
+  $('yc-edit-toggle').textContent='Salir de edición de vértices';
+  $('yc-edit-toggle').classList.remove('pri');
+
+  setHint('Editar vértices: toca un punto amarillo y arrástralo. Arrastra sobre el vacío para girar la cámara.');
+  requestRender();
+}
+
+function ycExitMeshEdit(){
+  const st=YC_MESH_EDITOR_BETA;
+
+  st.dragging=false;
+  orbit.enabled=true;
+
+  if(st.points){
+    scene.remove(st.points);
+    st.points.geometry=null;
+    st.points=null;
+  }
+
+  if(st.handle){
+    scene.remove(st.handle);
+    st.handle.geometry.dispose();
+    st.handle.material.dispose();
+    st.handle=null;
+  }
+
+  st.active=false;
+  st.mesh=null;
+  st.index=-1;
+  st.moved=false;
+  st.undoSaved=false;
+
+  if($('yc-edit-toggle')){
+    $('yc-edit-toggle').textContent='Activar edición de vértices';
+    $('yc-edit-toggle').classList.add('pri');
+  }
+
+  if(S.tool==='select'){
+    S.tool='move';
+    updateGizmo();
+  }
+
+  ycEditStats();
+  setHint(HINTS.move || 'Mover: toca una pieza y arrastra las flechas.');
+  requestRender();
+}
+
+function ycVertexHit(e){
+  const st=YC_MESH_EDITOR_BETA;
+  if(!st.active || !st.points) return null;
+
+  setMouse(e);
+
+  const ref=st.mesh.position.clone();
+  raycaster.params.Points.threshold=clamp(pxScale(ref)*9,0.2,3);
+
+  return raycaster.intersectObject(st.points,false)[0]||null;
+}
+
+function ycBeginVertexDrag(e,hit){
+  const st=YC_MESH_EDITOR_BETA;
+  if(!hit || hit.index==null) return;
+
+  const p=st.mesh.geometry.attributes.position;
+  st.index=hit.index;
+
+  const local=new THREE.Vector3().fromBufferAttribute(p,st.index);
+  const world=st.mesh.localToWorld(local.clone());
+
+  st.startWorld.copy(world);
+  st.startLocal.copy(local);
+  st.plane.setFromNormalAndCoplanarPoint(
+    cam.getWorldDirection(new THREE.Vector3()).normalize(),
+    world
+  );
+
+  st.dragging=true;
+  st.moved=false;
+  st.undoSaved=false;
+  orbit.enabled=false;
+
+  ycUpdateVertexHandle();
+  requestRender();
+}
+
+function ycMoveVertex(e){
+  const st=YC_MESH_EDITOR_BETA;
+  if(!st.dragging || !st.mesh || st.index<0) return;
+
+  setMouse(e);
+
+  const world=new THREE.Vector3();
+  if(!raycaster.ray.intersectPlane(st.plane,world)) return;
+
+  const local=st.mesh.worldToLocal(world.clone());
+  const delta=local.distanceTo(st.startLocal);
+
+  if(delta<0.0005) return;
+
+  if(!st.undoSaved){
+    pushUndo();
+    st.undoSaved=true;
+  }
+
+  const p=st.mesh.geometry.attributes.position;
+  p.setXYZ(st.index,local.x,local.y,local.z);
+  p.needsUpdate=true;
+
+  st.moved=true;
+
+  st.mesh.geometry.computeBoundingBox();
+  st.mesh.geometry.computeBoundingSphere();
+  st.mesh.geometry.computeVertexNormals();
+
+  ycUpdateVertexHandle();
+  fastBox();
+  ycEditStats();
+  requestRender();
+}
+
+function ycEndVertexDrag(){
+  const st=YC_MESH_EDITOR_BETA;
+  if(!st.dragging) return;
+
+  st.dragging=false;
+  orbit.enabled=true;
+
+  if(st.moved){
+    st.mesh.geometry.attributes.position.needsUpdate=true;
+    onGeometryChanged();
+  }
+
+  st.moved=false;
+  st.undoSaved=false;
+  requestRender();
+}
+
+
+/* ============================================================
+   INTERCEPCIÓN DEL VISOR EN MODO EDICIÓN
+   ============================================================ */
+
+el.addEventListener('pointerdown',(e)=>{
+  const st=YC_MESH_EDITOR_BETA;
+  if(!st.active || e.button!==0) return;
+
+  const hit=ycVertexHit(e);
+
+  if(hit){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    ycBeginVertexDrag(e,hit);
+    return;
+  }
+
+  setMouse(e);
+  const meshHit=raycaster.intersectObject(st.mesh,false)[0];
+
+  if(meshHit){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+},true);
+
+el.addEventListener('pointermove',(e)=>{
+  const st=YC_MESH_EDITOR_BETA;
+  if(!st.active || !st.dragging) return;
+
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  ycMoveVertex(e);
+},true);
+
+el.addEventListener('pointerup',(e)=>{
+  const st=YC_MESH_EDITOR_BETA;
+  if(!st.active || !st.dragging) return;
+
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  ycEndVertexDrag();
+},true);
+
+el.addEventListener('pointercancel',(e)=>{
+  const st=YC_MESH_EDITOR_BETA;
+  if(!st.active || !st.dragging) return;
+
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  ycEndVertexDrag();
+},true);
+
+window.addEventListener('keydown',(e)=>{
+  if(!YC_MESH_EDITOR_BETA.active) return;
+
+  if(e.key==='Escape'){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    ycExitMeshEdit();
+  }
+},true);
+
+
+/* ============================================================
+   REPARACIÓN BÁSICA CONSERVADORA
+   ============================================================ */
+
+function ycRepairSelected(){
+  const o=needMesh();
+  if(!o || o.userData.kind==='cutter') return;
+  if(o.userData.locked) return toast('La pieza está bloqueada.',{type:'warn'});
+
+  const tris=triCount(o.geometry);
+  if(tris>500000)
+    return toast('Malla demasiado grande para reparación automática en este equipo. Simplifica primero.',{type:'warn'});
+
+  ycExitMeshEdit();
+
+  pushUndo();
+
+  try{
+    let g=o.geometry.clone();
+
+    Object.keys(g.attributes).forEach(k=>{
+      if(k!=='position') g.deleteAttribute(k);
+    });
+
+    g=mergeVertices(g,1e-4);
+
+    const P=g.attributes.position;
+    const I=g.index ? g.index.array : null;
+
+    if(!I) throw new Error('No se pudo generar un índice de malla.');
+
+    const good=[];
+    const a=new THREE.Vector3();
+    const b=new THREE.Vector3();
+    const c=new THREE.Vector3();
+
+    for(let i=0;i<I.length;i+=3){
+      const ia=I[i],ib=I[i+1],ic=I[i+2];
+
+      if(ia===ib || ib===ic || ia===ic) continue;
+
+      a.fromBufferAttribute(P,ia);
+      b.fromBufferAttribute(P,ib);
+      c.fromBufferAttribute(P,ic);
+
+      if(
+        !Number.isFinite(a.x)||!Number.isFinite(a.y)||!Number.isFinite(a.z)||
+        !Number.isFinite(b.x)||!Number.isFinite(b.y)||!Number.isFinite(b.z)||
+        !Number.isFinite(c.x)||!Number.isFinite(c.y)||!Number.isFinite(c.z)
+      ) continue;
+
+      if(b.clone().sub(a).cross(c.clone().sub(a)).lengthSq()<1e-14) continue;
+
+      good.push(ia,ib,ic);
+    }
+
+    if(good.length<3)
+      throw new Error('La limpieza dejaría la malla sin triángulos válidos.');
+
+    g.setIndex(good);
+    g.computeVertexNormals();
+    g.computeBoundingBox();
+    g.computeBoundingSphere();
+    g.userData={welded:true};
+
+    o.geometry=g;
+    onGeometryChanged();
+
+    toast('Reparación básica terminada · vértices unidos, triángulos degenerados eliminados y normales recalculadas.',{type:'ok'});
+  }catch(err){
+    showError('No se pudo reparar la malla: '+err.message);
+  }
+}
+
+
+/* ============================================================
+   SEPARACIÓN DE COMPONENTES DESCONECTADOS
+   ============================================================ */
+
+async function ycSeparateComponents(){
+  const o=needMesh();
+  if(!o || o.userData.kind==='cutter') return;
+  if(o.userData.locked) return toast('La pieza está bloqueada.',{type:'warn'});
+
+  ycExitMeshEdit();
+
+  const tris=triCount(o.geometry);
+  if(tris>180000)
+    return toast('Malla demasiado grande para separar componentes con seguridad. Simplifica primero.',{type:'warn'});
+
+  busy(true,'Buscando componentes desconectados…');
+  await tick();
+
+  try{
+    let g=o.geometry.clone();
+
+    Object.keys(g.attributes).forEach(k=>{
+      if(k!=='position') g.deleteAttribute(k);
+    });
+
+    g=mergeVertices(g,1e-4);
+
+    const I=g.index?.array;
+    if(!I) throw new Error('No se pudo indexar la malla.');
+
+    const faceCount=Math.floor(I.length/3);
+    const vertexFaces=Array.from(
+      {length:g.attributes.position.count},
+      ()=>[]
+    );
+
+    for(let f=0;f<faceCount;f++){
+      vertexFaces[I[f*3]].push(f);
+      vertexFaces[I[f*3+1]].push(f);
+      vertexFaces[I[f*3+2]].push(f);
+    }
+
+    const seen=new Uint8Array(faceCount);
+    const components=[];
+
+    for(let seed=0;seed<faceCount;seed++){
+      if(seen[seed]) continue;
+
+      const queue=[seed];
+      const faces=[];
+      seen[seed]=1;
+
+      for(let qi=0;qi<queue.length;qi++){
+        const f=queue[qi];
+        faces.push(f);
+
+        for(let k=0;k<3;k++){
+          const v=I[f*3+k];
+
+          for(const nf of vertexFaces[v]){
+            if(!seen[nf]){
+              seen[nf]=1;
+              queue.push(nf);
+            }
+          }
+        }
+      }
+
+      components.push(faces);
+
+      if(components.length>60)
+        throw new Error('La malla contiene más de 60 componentes; la operación fue cancelada para evitar una explosión de objetos.');
+    }
+
+    if(components.length<=1){
+      toast('La pieza ya es un solo componente conectado.',{type:'warn'});
+      return;
+    }
+
+    const P=g.attributes.position;
+
+    const geos=components.map(faces=>{
+      const out=new Float32Array(faces.length*9);
+      let w=0;
+
+      for(const f of faces){
+        for(let k=0;k<3;k++){
+          const v=I[f*3+k];
+          out[w++]=P.getX(v);
+          out[w++]=P.getY(v);
+          out[w++]=P.getZ(v);
+        }
+      }
+
+      const ng=new THREE.BufferGeometry();
+      ng.setAttribute('position',new THREE.BufferAttribute(out,3));
+      ng.computeVertexNormals();
+      ng.computeBoundingBox();
+      ng.computeBoundingSphere();
+      ng.userData={welded:true};
+      return ng;
+    });
+
+    pushUndo();
+
+    const idx=objects.indexOf(o);
+    scene.remove(o);
+    if(idx>=0) objects.splice(idx,1);
+
+    const base=o.name.replace(/_\d+$/,'');
+    const created=[];
+
+    geos.forEach((ng,i)=>{
+      const m=new THREE.Mesh(ng,o.material.clone());
+      m.name=uniqueName(base+'_parte');
+      m.position.copy(o.position);
+      m.quaternion.copy(o.quaternion);
+      m.scale.copy(o.scale);
+      m.userData=Object.assign({},o.userData,{locked:false});
+      scene.add(m);
+      objects.push(m);
+      created.push(m);
+    });
+
+    refreshList();
+    selectObject(created[0]||null);
+    frameAll();
+    markDirty();
+
+    toast('Separadas '+created.length+' componentes independientes.',{type:'ok'});
+  }catch(err){
+    showError('No se pudieron separar los componentes: '+err.message);
+  }finally{
+    busy(false);
+  }
+}
+
+
+/* ============================================================
+   ORIENTACIÓN AUTOMÁTICA SOBRE LA PLATAFORMA
+   ============================================================ */
+
+function ycAutoOrient(){
+  const o=needMesh();
+  if(!o || o.userData.kind==='cutter') return;
+  if(o.userData.locked) return toast('La pieza está bloqueada.',{type:'warn'});
+
+  ycExitMeshEdit();
+
+  o.updateMatrixWorld(true);
+
+  if(!o.geometry.boundingBox)
+    o.geometry.computeBoundingBox();
+
+  const bb=o.geometry.boundingBox;
+  if(!bb || bb.isEmpty()) return toast('No hay una caja de límites válida para orientar la pieza.',{type:'warn'});
+
+  const corners=[];
+  for(const x of [bb.min.x,bb.max.x])
+    for(const y of [bb.min.y,bb.max.y])
+      for(const z of [bb.min.z,bb.max.z])
+        corners.push(new THREE.Vector3(x,y,z));
+
+  const angles=[0,Math.PI/2,Math.PI,Math.PI*1.5];
+  const candidates=[];
+  const seen=new Set();
+
+  for(const ax of angles){
+    for(const ay of angles){
+      for(const az of angles){
+        const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(ax,ay,az,'XYZ'));
+        const key=[
+          q.x.toFixed(5),
+          q.y.toFixed(5),
+          q.z.toFixed(5),
+          q.w.toFixed(5)
+        ].join(',');
+
+        if(!seen.has(key)){
+          seen.add(key);
+          candidates.push(q);
+        }
+      }
+    }
+  }
+
+  const current=o.quaternion.clone();
+  const scale=o.scale.clone();
+  const pos=o.position.clone();
+
+  function boundsFor(q){
+    const min=new THREE.Vector3(Infinity,Infinity,Infinity);
+    const max=new THREE.Vector3(-Infinity,-Infinity,-Infinity);
+
+    for(const c of corners){
+      const p=c.clone().multiply(scale).applyQuaternion(q).add(pos);
+      min.min(p);
+      max.max(p);
+    }
+
+    return new THREE.Box3(min,max);
+  }
+
+  let best=null;
+
+  for(const delta of candidates){
+    const q=current.clone().multiply(delta);
+    const b=boundsFor(q);
+    const sz=b.getSize(new THREE.Vector3());
+
+    const ox=Math.max(0,sz.x-S.plate.w);
+    const oz=Math.max(0,sz.z-S.plate.d);
+    const oy=Math.max(0,sz.y-S.plate.h);
+    const overflow=ox+oz+oy;
+    const fit=overflow<=0.001;
+
+    const score=[
+      fit?0:1,
+      overflow,
+      sz.y,
+      sz.x*sz.z
+    ];
+
+    if(!best || score.some((v,i)=>v<best.score[i] && score.slice(0,i).every((x,j)=>Math.abs(x-best.score[j])<1e-9))){
+      best={q,b,sz,score};
+    }
+  }
+
+  if(!best) return;
+
+  const changed=1-Math.abs(current.dot(best.q))>1e-6;
+
+  if(!changed){
+    dropToFloor(o);
+    onTransformEnd();
+    return toast('La pieza ya tiene una orientación adecuada.',{type:'ok'});
+  }
+
+  pushUndo();
+
+  o.quaternion.copy(best.q);
+  dropToFloor(o);
+  onTransformEnd();
+
+  const fit=best.score[0]===0;
+
+  toast(
+    fit
+      ? 'Orientación automática aplicada y pieza apoyada en la plataforma.'
+      : 'Orientación aplicada; la pieza sigue sin caber completamente en la plataforma.',
+    {type:fit?'ok':'warn',ms:5500}
+  );
+}
+
+
+/* ============================================================
+   CONECTAR LOS NUEVOS CONTROLES
+   ============================================================ */
+
+function ycInstallFeatureControls(){
+  const edit=$('yc-edit-toggle');
+  const repair=$('yc-repair-btn');
+  const separate=$('yc-separate-btn');
+
+  if(edit){
+    edit.addEventListener('click',()=>{
+      if(YC_MESH_EDITOR_BETA.active) ycExitMeshEdit();
+      else ycStartMeshEdit();
+    });
+  }
+
+  if(repair) repair.addEventListener('click',ycRepairSelected);
+  if(separate) separate.addEventListener('click',ycSeparateComponents);
+
+  const measurePane=$('pane-measure');
+  if(measurePane && !measurePane.querySelector('#yc-auto-orient-sec')){
+    const sec=document.createElement('details');
+    sec.className='sec';
+    sec.id='yc-auto-orient-sec';
+    sec.open=true;
+    sec.innerHTML=`
+      <summary>Preparar para imprimir</summary>
+      <div class="body">
+        <button type="button" id="yc-auto-orient" class="yc-feature-btn pri">
+          Orientar automáticamente
+        </button>
+        <div class="yc-tool-note">
+          Prueba orientaciones de 90° y elige una que reduzca el exceso de altura y, cuando es posible,
+          haga que la pieza quepa dentro de la plataforma configurada.
+        </div>
+      </div>
+    `;
+    measurePane.appendChild(sec);
+
+    $('yc-auto-orient')?.addEventListener('click',ycAutoOrient);
+  }
+}
+
+
+/* ============================================================
+   INICIO DE LA NUEVA CAPA
+   ============================================================ */
+
+ycCreateNavigation();
+ycInstallFeatureControls();
+ycEditStats();
+
 </script>
 </body>
 </html>
